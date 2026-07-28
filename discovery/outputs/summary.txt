@@ -1,0 +1,12 @@
+BANK OF CANADA - SERIES CATALOG
+========================================
+
+Number of series : 15906
+Number of columns: 4
+
+Columns
+------------------------------
+series_id
+label
+description
+link

@@ -1,0 +1,28 @@
+series_id,domain,justification,label,link
+CBC20210,Interest Rates,Target for the overnight rate (Bank of Canada policy rate),V39079,https://www.bankofcanada.ca/valet/series/CBC20210
+BD.CDN.2YR.DQ.YLD,Fixed Income,Benchmark bond yield: 2 year,Benchmark bond yield: 2 year,https://www.bankofcanada.ca/valet/series/BD.CDN.2YR.DQ.YLD
+BD.CDN.3YR.DQ.YLD,Fixed Income,Benchmark bond yield: 3 year,Benchmark bond yield: 3 year,https://www.bankofcanada.ca/valet/series/BD.CDN.3YR.DQ.YLD
+BD.CDN.5YR.DQ.YLD,Fixed Income,Benchmark bond yield: 5 year,Benchmark bond yield: 5 year,https://www.bankofcanada.ca/valet/series/BD.CDN.5YR.DQ.YLD
+BD.CDN.7YR.DQ.YLD,Fixed Income,Benchmark bond yield: 7 year,Benchmark bond yield: 7 year,https://www.bankofcanada.ca/valet/series/BD.CDN.7YR.DQ.YLD
+BD.CDN.10YR.DQ.YLD,Fixed Income,Benchmark bond yield: 10 year,Benchmark bond yield: 10 year,https://www.bankofcanada.ca/valet/series/BD.CDN.10YR.DQ.YLD
+BD.CDN.LONG.DQ.YLD,Fixed Income,Benchmark bond yield: long-term,Benchmark bond yield: long-term,https://www.bankofcanada.ca/valet/series/BD.CDN.LONG.DQ.YLD
+TB.CDN.30D.MID,Fixed Income,Treasury bill: 1 month,V39063,https://www.bankofcanada.ca/valet/series/TB.CDN.30D.MID
+TB.CDN.60D.MID,Fixed Income,Treasury bill: 2 month,V39064,https://www.bankofcanada.ca/valet/series/TB.CDN.60D.MID
+TB.CDN.90D.MID,Fixed Income,Treasury bill: 3 month,V39065,https://www.bankofcanada.ca/valet/series/TB.CDN.90D.MID
+TB.CDN.180D.MID,Fixed Income,Treasury bill: 6 month,V39066,https://www.bankofcanada.ca/valet/series/TB.CDN.180D.MID
+TB.CDN.1Y.MID,Fixed Income,Treasury bill: 1 year,V39067,https://www.bankofcanada.ca/valet/series/TB.CDN.1Y.MID
+FXUSDCAD,Foreign Exchange,USD/CAD daily exchange rate,USD/CAD,https://www.bankofcanada.ca/valet/series/FXUSDCAD
+FXEURCAD,Foreign Exchange,EUR/CAD daily exchange rate,EUR/CAD,https://www.bankofcanada.ca/valet/series/FXEURCAD
+FXGBPCAD,Foreign Exchange,GBP/CAD daily exchange rate,GBP/CAD,https://www.bankofcanada.ca/valet/series/FXGBPCAD
+FXJPYCAD,Foreign Exchange,JPY/CAD daily exchange rate,JPY/CAD,https://www.bankofcanada.ca/valet/series/FXJPYCAD
+FXCHFCAD,Foreign Exchange,CHF/CAD daily exchange rate,CHF/CAD,https://www.bankofcanada.ca/valet/series/FXCHFCAD
+FXCNYCAD,Foreign Exchange,CNY/CAD daily exchange rate,CNY/CAD,https://www.bankofcanada.ca/valet/series/FXCNYCAD
+INDINF_CPI_M,Inflation,Monthly CPI inflation,CPI inflation,https://www.bankofcanada.ca/valet/series/INDINF_CPI_M
+CPI_COMMON,Inflation,CPI-common (core inflation measure),CPI-common,https://www.bankofcanada.ca/valet/series/CPI_COMMON
+CPI_MEDIAN,Inflation,CPI-median (core inflation measure),CPI-median,https://www.bankofcanada.ca/valet/series/CPI_MEDIAN
+CPI_TRIM,Inflation,CPI-trim (core inflation measure),CPI-trim,https://www.bankofcanada.ca/valet/series/CPI_TRIM
+M1PP_12MTH,Monetary Aggregates,M1++ year-over-year growth rate,M1++ (Year-over-year growth rates),https://www.bankofcanada.ca/valet/series/M1PP_12MTH
+M2PP_12MTH,Monetary Aggregates,M2++ year-over-year growth rate,M2++ (Year-over-year growth rates),https://www.bankofcanada.ca/valet/series/M2PP_12MTH
+V80691333,Banking,Conventional mortgage rate: 1 year,Conventional mortgage: 1-year,https://www.bankofcanada.ca/valet/series/V80691333
+V80691334,Banking,Conventional mortgage rate: 3 year,Conventional mortgage: 3-year,https://www.bankofcanada.ca/valet/series/V80691334
+V80691335,Banking,Conventional mortgage rate: 5 year,Conventional mortgage: 5-year,https://www.bankofcanada.ca/valet/series/V80691335
