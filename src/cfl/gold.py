@@ -18,7 +18,7 @@ A row dated month ``t`` represents the information set at the *end* of month ``t
 
 Output::
 
-    data/gold/model_table_monthly.parquet
+    data/gold/model_table_monthly/         Delta table (versioned: every run can be read back)
     data/gold/model_table_monthly.csv      same content, for quick inspection / BI tools
     data/gold/column_dictionary.csv        every column, its role and meaning
 """
@@ -32,11 +32,13 @@ import numpy as np
 import pandas as pd
 
 from cfl.config import Registry, data_dir
+from cfl.storage import read_table, write_table
 
 log = logging.getLogger(__name__)
 
 HORIZONS_INFLATION = (3, 6, 12)
 HORIZONS_POLICY = (1, 3)
+GOLD_START = pd.Period("1990-01", freq="M")  # earlier rows are mostly empty (only US series go back further)
 POLICY_TOLERANCE = 0.01  # changes smaller than 1 bp count as "hold"
 FFILL_LIMIT = {"D": 2, "W": 2, "M": 2, "Q": 3}
 
@@ -56,8 +58,9 @@ def to_monthly(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
             continue
         dates = pd.DatetimeIndex(frame["date"])
         if spec.frequency == "Q":
-            # A quarterly value describes the quarter; it is stamped on the quarter's last month.
-            periods = dates.to_period("Q").asfreq("M", how="end")
+            # Activity data describe the whole quarter → stamped on its last month.
+            # Surveys are dated when they are conducted → stamped on the quarter's first month.
+            periods = dates.to_period("Q").asfreq("M", how=spec.quarter_stamp)
         else:
             periods = dates.to_period("M")
         values = pd.Series(frame["value"].to_numpy(), index=periods).sort_index()
@@ -238,6 +241,7 @@ def build_gold(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
     targets, target_doc = build_targets(reference)
 
     table = pd.concat([rt, derived, targets], axis=1)
+    table = table.loc[table.index >= GOLD_START]
     current_month = pd.Timestamp.now().to_period("M")
     table.insert(0, "is_partial_month", table.index >= current_month)
 
@@ -266,12 +270,14 @@ def build_gold(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
     export = table.copy()
     export.index = export.index.to_timestamp()
     export.index.name = "month"
-    export.to_parquet(out / "model_table_monthly.parquet")
+    version = write_table(export.reset_index(), out / "model_table_monthly")
     export.to_csv(out / "model_table_monthly.csv", float_format="%.4f")
     dictionary.to_csv(out / "column_dictionary.csv", index=False)
-    log.info("Gold: %d months x %d columns (%s → %s)", *table.shape, table.index.min(), table.index.max())
+    log.info("Gold: %d months x %d columns, Delta version %d", *table.shape, version)
     return table
 
 
-def read_gold() -> pd.DataFrame:
-    return pd.read_parquet(gold_dir() / "model_table_monthly.parquet")
+def read_gold(version: int | None = None) -> pd.DataFrame:
+    """Gold table indexed by month; pass ``version`` to read a past state of the table."""
+    frame = read_table(gold_dir() / "model_table_monthly", version)
+    return frame.set_index(pd.PeriodIndex(frame.pop("month"), freq="M")).sort_index()

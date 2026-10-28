@@ -28,6 +28,7 @@ class SeriesSpec(BaseModel):
     unit: str
     monthly_agg: Literal["mean", "last"]
     release_lag_months: int = Field(ge=0, le=6)
+    quarter_stamp: Literal["start", "end"] = "end"
     verified: bool = False
     description: str = ""
 

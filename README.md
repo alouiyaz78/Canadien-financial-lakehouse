@@ -30,8 +30,9 @@ This project builds the data pipeline and models needed to study exactly that ki
   with its source, frequency, aggregation rule and publication lag. Adding a series is a one-line change.
 * **Bronze is immutable** – each run stores a new timestamped snapshot plus a SHA-256 manifest, so data
   revisions (StatCan revises GDP and LFS) are traceable.
-* **Storage: Parquet** – the data is ~30 monthly/daily series, so a single-node columnar format is the right
-  tool; the layer structure is the same one would use with Delta Lake on Spark at larger scale.
+* **Storage: Delta Lake (delta-rs)** – Silver and Gold are Delta tables written with the Rust `deltalake`
+  library: ACID writes and **time travel** (`read_gold(version=3)` returns the exact table a past model was
+  trained on) without a Spark cluster, which would be oversized for ~40 series.
 
 ### Data
 
@@ -54,7 +55,8 @@ A Gold row dated month *t* contains only what was **published by the end of mont
 
 * each feature is shifted by its `release_lag_months` (September CPI is released in October, so it enters the
   October row; monthly GDP enters two months later);
-* quarterly survey data is stamped on the last month of its quarter, then lagged;
+* quarterly data describing a whole quarter is stamped on its last month; surveys (BOS, Consensus) on the
+  month they are conducted;
 * targets are built from reference-period values shifted **forward** (`y_cpi_trim_h6` = CPI-trim six months
   after *t*).
 
@@ -72,6 +74,7 @@ uv sync                      # install dependencies
 uv run cfl verify-sources    # check every series id against the source catalogs
 uv run cfl run               # ingest → silver → gold
 uv run cfl status            # last observation of each series
+uv run cfl history           # Delta versions of Silver and Gold
 uv run pytest                # tests (offline, synthetic payloads)
 ```
 
@@ -80,7 +83,7 @@ Outputs:
 | File | Content |
 |---|---|
 | `data/silver/quality_report.csv` | coverage, gaps, dropped values per series |
-| `data/gold/model_table_monthly.parquet` (+ `.csv`) | one row per month: raw features, derived features, targets |
+| `data/gold/model_table_monthly/` (Delta, + `.csv`) | one row per month since 1990: raw features, derived features, targets |
 | `data/gold/column_dictionary.csv` | role and meaning of every column |
 
 ## Repository layout

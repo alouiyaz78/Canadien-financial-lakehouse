@@ -5,6 +5,7 @@ description = "Medallion data pipeline (Bank of Canada Valet, Statistics Canada,
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "deltalake>=1.6.2",
     "matplotlib>=3.11.1",
     "openpyxl>=3.1.5",
     "pandas>=3.0.3",

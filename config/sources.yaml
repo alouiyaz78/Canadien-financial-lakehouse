@@ -13,6 +13,8 @@
 #                     Gold shifts every feature by this lag so that a row dated month t only
 #                     contains information actually available at the end of month t
 #                     (no look-ahead leakage). Financial market data = 0.
+#   quarter_stamp     quarterly series only: "end" (default) for data describing the whole quarter,
+#                     "start" for surveys dated when they are conducted (BOS, Consensus Forecasts)
 #   verified          true when the id was checked against the source catalog.
 #                     StatCan vectors set to false must be checked with `uv run cfl verify-sources`.
 
@@ -44,13 +46,13 @@ series:
   - {name: cpi_trim, source: valet, source_id: CPI_TRIM, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-trim (core)"}
   - {name: cpi_median, source: valet, source_id: CPI_MEDIAN, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-median (core)"}
   - {name: cpi_common, source: valet, source_id: CPI_COMMON, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-common (core)"}
-  - {name: cpi_all_items_index, source: statcan, source_id: "41690973", frequency: M, domain: inflation, unit: "index 2002=100", monthly_agg: last, release_lag_months: 1, verified: false,
+  - {name: cpi_all_items_index, source: statcan, source_id: "41690973", frequency: M, domain: inflation, unit: "index 2002=100", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "CPI all-items, Canada, not seasonally adjusted (table 18-10-0004-01) — headline y/y computed in Gold"}
 
   # ---------------------------------------------------------------- Inflation expectations
-  - {name: infl_exp_consensus_2_3y, source: valet, source_id: INDINF_EXPECTTWOTHREE_Q, frequency: Q, domain: expectations, unit: "%", monthly_agg: last, release_lag_months: 1, verified: true,
+  - {name: infl_exp_consensus_2_3y, source: valet, source_id: INDINF_EXPECTTWOTHREE_Q, frequency: Q, domain: expectations, unit: "%", monthly_agg: last, release_lag_months: 0, quarter_stamp: start, verified: true,
      description: "Consensus Forecasts — CPI inflation expected 2-3 years ahead"}
-  - {name: bos_firms_infl_above_3, source: valet, source_id: INDINF_BOSOVER3_Q, frequency: Q, domain: expectations, unit: "% of firms", monthly_agg: last, release_lag_months: 1, verified: true,
+  - {name: bos_firms_infl_above_3, source: valet, source_id: INDINF_BOSOVER3_Q, frequency: Q, domain: expectations, unit: "% of firms", monthly_agg: last, release_lag_months: 0, quarter_stamp: start, verified: true,
      description: "Business Outlook Survey — share of firms expecting CPI inflation above 3%"}
 
   # ---------------------------------------------------------------- Commodities (oil-shock channel)
@@ -60,13 +62,13 @@ series:
   - {name: wti_oil, source: fred, source_id: MCOILWTICO, frequency: M, domain: commodities, unit: "USD/barrel", monthly_agg: last, release_lag_months: 0, verified: true, description: "WTI crude oil, monthly average"}
 
   # ---------------------------------------------------------------- Real economy (Statistics Canada)
-  - {name: unemployment_rate, source: statcan, source_id: "2062815", frequency: M, domain: labour, unit: "%", monthly_agg: last, release_lag_months: 1, verified: false,
+  - {name: unemployment_rate, source: statcan, source_id: "2062815", frequency: M, domain: labour, unit: "%", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "Unemployment rate, 15+, Canada, seasonally adjusted (table 14-10-0287-01)"}
-  - {name: employment, source: statcan, source_id: "2062811", frequency: M, domain: labour, unit: "thousands", monthly_agg: last, release_lag_months: 1, verified: false,
+  - {name: employment, source: statcan, source_id: "2062811", frequency: M, domain: labour, unit: "thousands", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "Employment, 15+, Canada, seasonally adjusted (table 14-10-0287-01)"}
   - {name: wage_growth_lfs, source: valet, source_id: INDINF_LFSWC_M, frequency: M, domain: labour, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "Wage growth, Labour Force Survey (year-over-year)"}
-  - {name: gdp_monthly, source: statcan, source_id: "65201210", frequency: M, domain: activity, unit: "chained 2017 $ millions", monthly_agg: last, release_lag_months: 2, verified: false,
+  - {name: gdp_monthly, source: statcan, source_id: "65201210", frequency: M, domain: activity, unit: "chained 2017 $ millions", monthly_agg: last, release_lag_months: 2, verified: true,
      description: "GDP at basic prices, all industries, seasonally adjusted (table 36-10-0434-01)"}
 
   # ---------------------------------------------------------------- Money and credit

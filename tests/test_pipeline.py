@@ -69,7 +69,7 @@ def test_bronze_writes_raw_files_and_manifest(lake):
 def test_silver_quality_report(lake):
     report = lake["report"].set_index("name")
     assert report.loc["cpi_trim", "n_clean"] == N_MONTHS
-    assert (lake["root"] / "silver" / "observations.parquet").exists()
+    assert (lake["root"] / "silver" / "observations" / "_delta_log").exists()
 
 
 def test_gold_shifts_features_by_release_lag(lake):
@@ -125,6 +125,25 @@ def test_headline_inflation_derived_from_index(lake):
 
 def test_gold_files_written(lake):
     out = lake["root"] / "gold"
-    assert (out / "model_table_monthly.parquet").exists()
+    assert (out / "model_table_monthly" / "_delta_log").exists()
     dictionary = pd.read_csv(out / "column_dictionary.csv")
     assert set(dictionary["role"]) == {"meta", "feature_raw", "feature_derived", "target"}
+
+
+def test_gold_is_versioned_and_readable_back(lake, registry):
+    from cfl.storage import history
+
+    first = gold.read_gold()
+    pd.testing.assert_index_equal(first.index, lake["table"].index)
+    gold.build_gold(lake["observations"], registry)  # second run → new Delta version
+    versions = history(lake["root"] / "gold" / "model_table_monthly")
+    assert versions["version"].tolist() == [0, 1]
+    assert gold.read_gold(version=0).shape == first.shape
+
+
+def test_survey_quarter_stamped_on_first_month():
+    reg = Registry(series=[spec(name="survey", source_id="S", frequency="Q", quarter_stamp="start")])
+    obs = pd.DataFrame({"name": "survey", "date": pd.to_datetime(["2022-01-01", "2022-04-01"]), "value": [1.0, 2.0]})
+    panel = gold.to_monthly(obs, reg)
+    assert panel.loc[pd.Period("2022-01", "M"), "survey"] == 1.0
+    assert panel.loc[pd.Period("2022-04", "M"), "survey"] == 2.0

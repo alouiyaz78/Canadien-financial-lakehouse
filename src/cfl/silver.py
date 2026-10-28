@@ -2,7 +2,7 @@
 
 Output::
 
-    data/silver/observations.parquet   long format: name, source, source_id, frequency, date, value
+    data/silver/observations/          Delta table, long format: name, source, source_id, frequency, date, value
     data/silver/quality_report.csv     one row per series: coverage, gaps, dropped values
 
 Rules applied: numeric casting, rows without a value dropped (and counted),
@@ -19,6 +19,7 @@ import pandas as pd
 from cfl.bronze import latest_snapshot
 from cfl.config import SeriesSpec, data_dir
 from cfl.sources import client_for
+from cfl.storage import read_table, write_table
 
 log = logging.getLogger(__name__)
 
@@ -79,11 +80,11 @@ def build_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     out = silver_dir()
     out.mkdir(parents=True, exist_ok=True)
-    observations.to_parquet(out / "observations.parquet", index=False)
+    version = write_table(observations, out / "observations")
     report.to_csv(out / "quality_report.csv", index=False)
-    log.info("Silver: %d series, %d observations", report.shape[0], observations.shape[0])
+    log.info("Silver: %d series, %d observations (Delta version %d)", report.shape[0], observations.shape[0], version)
     return observations, report
 
 
-def read_silver() -> pd.DataFrame:
-    return pd.read_parquet(silver_dir() / "observations.parquet")
+def read_silver(version: int | None = None) -> pd.DataFrame:
+    return read_table(silver_dir() / "observations", version)

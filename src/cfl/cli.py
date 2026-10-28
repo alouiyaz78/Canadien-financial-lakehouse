@@ -1,10 +1,11 @@
 """Command-line entry point: ``uv run cfl <command>``.
 
-cfl ingest [--only NAME ...] [--source valet|statcan|fred]   download raw data (Bronze)
+cfl ingest [--only NAME ...] [--source SOURCE]               download raw data (Bronze)
 cfl silver                                                    parse + quality report
 cfl gold                                                      monthly model table
 cfl run                                                       ingest + silver + gold
 cfl status                                                    last observation per series
+cfl history                                                   Delta versions of Silver and Gold (time travel)
 cfl verify-sources                                            check ids against source metadata
 """
 
@@ -61,6 +62,18 @@ def _cmd_status(_: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_history(_: argparse.Namespace) -> int:
+    from cfl.storage import history
+
+    for label, path in [
+        ("silver/observations", silver.silver_dir() / "observations"),
+        ("gold/model_table_monthly", gold.gold_dir() / "model_table_monthly"),
+    ]:
+        print(f"\n{label}")
+        print(history(path).to_string(index=False))
+    return 0
+
+
 def _cmd_verify(_: argparse.Namespace) -> int:
     session = make_session()
     problems = 0
@@ -96,6 +109,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("silver", _cmd_silver, "parse Bronze into the Silver table"),
         ("gold", _cmd_gold, "build the monthly model table"),
         ("status", _cmd_status, "show last observation per series"),
+        ("history", _cmd_history, "list Delta table versions (time travel)"),
         ("verify-sources", _cmd_verify, "check series ids against source metadata"),
     ]:
         sub.add_parser(name, help=help_text).set_defaults(func=func)
