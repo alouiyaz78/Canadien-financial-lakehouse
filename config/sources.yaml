@@ -1,0 +1,79 @@
+# Series registry — single source of truth for the pipeline.
+#
+# Each entry describes one time series to ingest:
+#   name              internal snake_case name used in Silver/Gold tables
+#   source            valet (Bank of Canada) | statcan (Statistics Canada WDS) | fred (St. Louis Fed)
+#   source_id         identifier in the source system (Valet series id, StatCan vector number, FRED id)
+#   frequency         native frequency: D (daily), W (weekly), M (monthly), Q (quarterly)
+#   domain            business domain, used for documentation and grouping
+#   unit              unit of the raw value
+#   monthly_agg       how to collapse to monthly in Gold: mean | last
+#   release_lag_months  months between the end of the reference period and publication.
+#                     Gold shifts every feature by this lag so that a row dated month t only
+#                     contains information actually available at the end of month t
+#                     (no look-ahead leakage). Financial market data = 0.
+#   verified          true when the id was checked against the source catalog.
+#                     StatCan vectors set to false must be checked with `uv run cfl verify-sources`.
+
+series:
+  # ---------------------------------------------------------------- Policy rate
+  - {name: policy_rate, source: valet, source_id: CBC20210, frequency: D, domain: interest_rates, unit: "%", monthly_agg: last, release_lag_months: 0, verified: true,
+     description: "Target for the overnight rate (Bank of Canada policy rate)"}
+  - {name: corra, source: valet, source_id: AVG.INTWO, frequency: D, domain: interest_rates, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true,
+     description: "Canadian Overnight Repo Rate Average (CORRA)"}
+
+  # ---------------------------------------------------------------- Government of Canada yield curve
+  - {name: tbill_1m, source: valet, source_id: TB.CDN.30D.MID, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Treasury bill 1 month"}
+  - {name: tbill_3m, source: valet, source_id: TB.CDN.90D.MID, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Treasury bill 3 months"}
+  - {name: tbill_6m, source: valet, source_id: TB.CDN.180D.MID, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Treasury bill 6 months"}
+  - {name: tbill_1y, source: valet, source_id: TB.CDN.1Y.MID, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Treasury bill 1 year"}
+  - {name: bond_2y, source: valet, source_id: BD.CDN.2YR.DQ.YLD, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Benchmark bond yield 2 years"}
+  - {name: bond_5y, source: valet, source_id: BD.CDN.5YR.DQ.YLD, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Benchmark bond yield 5 years"}
+  - {name: bond_10y, source: valet, source_id: BD.CDN.10YR.DQ.YLD, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Benchmark bond yield 10 years"}
+  - {name: bond_long, source: valet, source_id: BD.CDN.LONG.DQ.YLD, frequency: D, domain: fixed_income, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Benchmark bond yield long-term"}
+
+  # ---------------------------------------------------------------- Exchange rates
+  - {name: usdcad, source: valet, source_id: FXUSDCAD, frequency: D, domain: fx, unit: "CAD per USD", monthly_agg: mean, release_lag_months: 0, verified: true, description: "USD/CAD daily rate (2017+)"}
+  - {name: usdcad_noon_legacy, source: valet, source_id: IEXE0101, frequency: D, domain: fx, unit: "CAD per USD", monthly_agg: mean, release_lag_months: 0, verified: true,
+     description: "USD/CAD legacy noon rate (discontinued 2017) — spliced with usdcad in Gold to extend history"}
+  - {name: ceer_nominal, source: valet, source_id: CEER_BROADNM, frequency: M, domain: fx, unit: "index", monthly_agg: last, release_lag_months: 0, verified: true,
+     description: "Monthly nominal Canadian effective exchange rate (broad)"}
+
+  # ---------------------------------------------------------------- Inflation (targets for project A)
+  - {name: cpi_trim, source: valet, source_id: CPI_TRIM, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-trim (core)"}
+  - {name: cpi_median, source: valet, source_id: CPI_MEDIAN, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-median (core)"}
+  - {name: cpi_common, source: valet, source_id: CPI_COMMON, frequency: M, domain: inflation, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "CPI-common (core)"}
+  - {name: cpi_all_items_index, source: statcan, source_id: "41690973", frequency: M, domain: inflation, unit: "index 2002=100", monthly_agg: last, release_lag_months: 1, verified: false,
+     description: "CPI all-items, Canada, not seasonally adjusted (table 18-10-0004-01) — headline y/y computed in Gold"}
+
+  # ---------------------------------------------------------------- Inflation expectations
+  - {name: infl_exp_consensus_2_3y, source: valet, source_id: INDINF_EXPECTTWOTHREE_Q, frequency: Q, domain: expectations, unit: "%", monthly_agg: last, release_lag_months: 1, verified: true,
+     description: "Consensus Forecasts — CPI inflation expected 2-3 years ahead"}
+  - {name: bos_firms_infl_above_3, source: valet, source_id: INDINF_BOSOVER3_Q, frequency: Q, domain: expectations, unit: "% of firms", monthly_agg: last, release_lag_months: 1, verified: true,
+     description: "Business Outlook Survey — share of firms expecting CPI inflation above 3%"}
+
+  # ---------------------------------------------------------------- Commodities (oil-shock channel)
+  - {name: bcpi_total, source: valet, source_id: M.BCPI, frequency: M, domain: commodities, unit: "index", monthly_agg: last, release_lag_months: 1, verified: true, description: "BCPI total"}
+  - {name: bcpi_energy, source: valet, source_id: M.ENER, frequency: M, domain: commodities, unit: "index", monthly_agg: last, release_lag_months: 1, verified: true, description: "BCPI energy"}
+  - {name: bcpi_ex_energy, source: valet, source_id: M.BCNE, frequency: M, domain: commodities, unit: "index", monthly_agg: last, release_lag_months: 1, verified: true, description: "BCPI excluding energy"}
+  - {name: wti_oil, source: fred, source_id: MCOILWTICO, frequency: M, domain: commodities, unit: "USD/barrel", monthly_agg: last, release_lag_months: 0, verified: true, description: "WTI crude oil, monthly average"}
+
+  # ---------------------------------------------------------------- Real economy (Statistics Canada)
+  - {name: unemployment_rate, source: statcan, source_id: "2062815", frequency: M, domain: labour, unit: "%", monthly_agg: last, release_lag_months: 1, verified: false,
+     description: "Unemployment rate, 15+, Canada, seasonally adjusted (table 14-10-0287-01)"}
+  - {name: employment, source: statcan, source_id: "2062811", frequency: M, domain: labour, unit: "thousands", monthly_agg: last, release_lag_months: 1, verified: false,
+     description: "Employment, 15+, Canada, seasonally adjusted (table 14-10-0287-01)"}
+  - {name: wage_growth_lfs, source: valet, source_id: INDINF_LFSWC_M, frequency: M, domain: labour, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true,
+     description: "Wage growth, Labour Force Survey (year-over-year)"}
+  - {name: gdp_monthly, source: statcan, source_id: "65201210", frequency: M, domain: activity, unit: "chained 2017 $ millions", monthly_agg: last, release_lag_months: 2, verified: false,
+     description: "GDP at basic prices, all industries, seasonally adjusted (table 36-10-0434-01)"}
+
+  # ---------------------------------------------------------------- Money and credit
+  - {name: m2pp_growth, source: valet, source_id: M2PP_12MTH, frequency: M, domain: money, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "M2++ year-over-year growth"}
+  - {name: mortgage_5y, source: valet, source_id: V80691335, frequency: W, domain: banking, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Conventional 5-year mortgage rate"}
+
+  # ---------------------------------------------------------------- United States (main external driver)
+  - {name: us_fed_funds, source: fred, source_id: FEDFUNDS, frequency: M, domain: us, unit: "%", monthly_agg: last, release_lag_months: 0, verified: true, description: "Effective federal funds rate, monthly average"}
+  - {name: us_treasury_2y, source: fred, source_id: GS2, frequency: M, domain: us, unit: "%", monthly_agg: last, release_lag_months: 0, verified: true, description: "US Treasury 2-year constant maturity, monthly average"}
+  - {name: us_treasury_10y, source: fred, source_id: GS10, frequency: M, domain: us, unit: "%", monthly_agg: last, release_lag_months: 0, verified: true, description: "US Treasury 10-year constant maturity, monthly average"}
+  - {name: us_cpi_index, source: fred, source_id: CPIAUCSL, frequency: M, domain: us, unit: "index 1982-84=100", monthly_agg: last, release_lag_months: 1, verified: true, description: "US CPI all items, seasonally adjusted"}
