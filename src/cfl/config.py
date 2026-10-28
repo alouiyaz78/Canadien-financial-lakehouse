@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REGISTRY = PROJECT_ROOT / "config" / "sources.yaml"
 
-Source = Literal["valet", "statcan", "fred"]
+Source = Literal["valet", "statcan", "fred", "census"]
 Frequency = Literal["D", "W", "M", "Q"]
 
 

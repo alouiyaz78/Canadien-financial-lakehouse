@@ -2,9 +2,9 @@
 
 from types import ModuleType
 
-from cfl.sources import fred, statcan, valet
+from cfl.sources import census, fred, statcan, valet
 
-CLIENTS: dict[str, ModuleType] = {"valet": valet, "statcan": statcan, "fred": fred}
+CLIENTS: dict[str, ModuleType] = {"valet": valet, "statcan": statcan, "fred": fred, "census": census}
 
 
 def client_for(source: str) -> ModuleType:

@@ -19,13 +19,14 @@ This project builds the data pipeline and models needed to study exactly that ki
 
 ```
  Bank of Canada Valet ─┐
- Statistics Canada WDS ─┼─►  BRONZE              ─►  SILVER                 ─►  GOLD
+ Statistics Canada WDS ─┤
+ US Census (tariffs)   ─┼─►  BRONZE              ─►  SILVER                 ─►  GOLD
  FRED (US data)        ─┘    raw API snapshots       tidy observations          monthly model table
                              + ingestion manifest    + quality report           real-time features + targets
                              data/bronze/            data/silver/               data/gold/
 ```
 
-* **Registry-driven** – every series (33 today) is declared once in [`config/sources.yaml`](config/sources.yaml)
+* **Registry-driven** – every series (38 today) is declared once in [`config/sources.yaml`](config/sources.yaml)
   with its source, frequency, aggregation rule and publication lag. Adding a series is a one-line change.
 * **Bronze is immutable** – each run stores a new timestamped snapshot plus a SHA-256 manifest, so data
   revisions (StatCan revises GDP and LFS) are traceable.
@@ -45,6 +46,7 @@ This project builds the data pipeline and models needed to study exactly that ki
 | FX | USD/CAD (spliced with legacy noon rate to extend pre-2017), CEER | Valet |
 | Money & credit | M2++ growth, 5-year mortgage rate | Valet |
 | United States | Fed funds, Treasury 2y/10y, US CPI | FRED |
+| Tariffs & trade policy | Effective US tariff rate on Canada / Mexico / China, trade-policy uncertainty index, US import prices from Canada | US Census, FRED |
 
 ### Avoiding look-ahead bias
 
@@ -111,6 +113,7 @@ discovery/                   raw catalog extraction and outputs
 * Bank of Canada Valet API — [terms of use](https://www.bankofcanada.ca/terms/)
 * Statistics Canada Web Data Service — [Statistics Canada Open Licence](https://www.statcan.gc.ca/en/reference/licence)
 * Federal Reserve Bank of St. Louis, FRED — [terms of use](https://fred.stlouisfed.org/legal/)
+* US Census Bureau International Trade API — [terms of service](https://www.census.gov/data/developers/about/terms-of-service.html)
 
 ---
 

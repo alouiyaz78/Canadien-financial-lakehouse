@@ -156,6 +156,33 @@ def derive_features(rt: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
     ]:
         if level in rt:
             add(f"{level}_yoy", _yoy(rt[level]), f"{label}, y/y % change")
+    if _has(rt, "us_tariff_rate_on_canada"):
+        add(
+            "us_tariff_canada_chg_3m",
+            rt.us_tariff_rate_on_canada.diff(3),
+            "3-month change in the US effective tariff on Canada",
+        )
+        add(
+            "us_tariff_canada_chg_12m",
+            rt.us_tariff_rate_on_canada.diff(12),
+            "12-month change in the US effective tariff on Canada",
+        )
+    if _has(rt, "us_tariff_rate_on_canada", "us_tariff_rate_on_china"):
+        add(
+            "us_tariff_china_minus_canada",
+            rt.us_tariff_rate_on_china - rt.us_tariff_rate_on_canada,
+            "Tariff gap China vs Canada (relative competitiveness on the US market)",
+        )
+    if "trade_policy_uncertainty" in rt:
+        add(
+            "trade_policy_uncertainty_z",
+            (rt.trade_policy_uncertainty - rt.trade_policy_uncertainty.rolling(60, min_periods=24).mean())
+            / rt.trade_policy_uncertainty.rolling(60, min_periods=24).std(),
+            "Trade-policy uncertainty, z-score vs its 5-year history",
+        )
+    for level, label in [("us_import_prices_from_canada", "US import prices from Canada")]:
+        if level in rt:
+            add(f"{level}_yoy", _yoy(rt[level]), f"{label}, y/y % change")
     if "wti_oil" in rt:
         add("wti_oil_chg_3m_pct", (rt.wti_oil / rt.wti_oil.shift(3) - 1) * 100, "WTI oil price, 3-month % change")
     if "unemployment_rate" in rt:

@@ -89,7 +89,7 @@ def build_parser() -> argparse.ArgumentParser:
     ]:
         p = sub.add_parser(name, help=help_text)
         p.add_argument("--only", nargs="+", metavar="NAME", help="restrict to these series names")
-        p.add_argument("--source", choices=["valet", "statcan", "fred"])
+        p.add_argument("--source", choices=["valet", "statcan", "fred", "census"])
         p.set_defaults(func=func)
 
     for name, func, help_text in [
