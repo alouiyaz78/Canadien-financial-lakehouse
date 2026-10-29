@@ -59,7 +59,8 @@ def clean_series(raw: pd.DataFrame, spec: SeriesSpec) -> tuple[pd.DataFrame, dic
     return frame, quality
 
 
-def build_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
+def assemble_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse the latest Bronze snapshots into (observations, quality report), without writing anything."""
     frames, reports = [], []
     for spec in specs:
         snapshot = latest_snapshot(spec)
@@ -80,9 +81,12 @@ def build_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
     if not frames:
         raise RuntimeError("Silver is empty: no Bronze snapshots found.")
 
-    observations = pd.concat(frames, ignore_index=True)
-    report = pd.DataFrame(reports)
+    return pd.concat(frames, ignore_index=True), pd.DataFrame(reports)
 
+
+def build_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Assemble Silver and write it to the local lakehouse (Delta table + quality report CSV)."""
+    observations, report = assemble_silver(specs)
     out = silver_dir()
     out.mkdir(parents=True, exist_ok=True)
     version = write_table(observations, out / "observations")

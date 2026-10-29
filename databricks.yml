@@ -1,0 +1,89 @@
+# Databricks Asset Bundle — deploys the whole lakehouse to a Databricks workspace:
+#   * Unity Catalog schema + managed Volume (raw Bronze files)
+#   * a daily serverless Job: Bronze → Silver → Gold
+#
+#   databricks bundle validate
+#   databricks bundle deploy -t prod
+#   databricks bundle run cfl_daily_refresh -t prod
+#
+# See docs/databricks.md for the one-time setup (CLI login, Census secret).
+
+bundle:
+  name: canadian-financial-lakehouse
+
+variables:
+  catalog:
+    description: Unity Catalog catalog (Free Edition workspaces have "workspace")
+    default: workspace
+  schema:
+    description: Schema holding the Volume and all tables
+    default: cfl
+
+sync:
+  include:
+    - src/**
+    - config/**
+    - databricks/**
+  exclude:
+    - data/**
+    - .venv/**
+    - discovery/**
+    - notebooks/**
+
+resources:
+  schemas:
+    cfl:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: "Canadian Financial Lakehouse — Bank of Canada, Statistics Canada, FRED and US Census data"
+
+  volumes:
+    lake:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.cfl.name}
+      name: lake
+      volume_type: MANAGED
+      comment: "Raw API responses (Bronze) and ingestion manifests"
+
+  jobs:
+    cfl_daily_refresh:
+      name: cfl-daily-refresh
+      description: "Ingest Bank of Canada / StatCan / FRED / Census data and rebuild the Silver and Gold tables."
+      max_concurrent_runs: 1
+      schedule:
+        # Every day at 07:43 Toronto time, after the previous day's Valet publications.
+        quartz_cron_expression: "0 43 7 * * ?"
+        timezone_id: America/Toronto
+        pause_status: UNPAUSED
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${resources.schemas.cfl.name}
+      tasks:
+        - task_key: bronze_ingest
+          notebook_task:
+            notebook_path: ./databricks/notebooks/01_bronze_ingest.py
+          max_retries: 1
+          min_retry_interval_millis: 600000
+        - task_key: silver_transform
+          depends_on:
+            - task_key: bronze_ingest
+          notebook_task:
+            notebook_path: ./databricks/notebooks/02_silver_transform.py
+        - task_key: gold_model_table
+          depends_on:
+            - task_key: silver_transform
+          notebook_task:
+            notebook_path: ./databricks/notebooks/03_gold_model_table.py
+
+targets:
+  # Personal sandbox: resources are prefixed with your user name and schedules are paused.
+  dev:
+    mode: development
+    default: true
+
+  # The "real" deployment shown in the portfolio: plain resource names, schedule active.
+  prod:
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

@@ -234,7 +234,8 @@ def build_targets(reference: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]
 
 
 # --------------------------------------------------------------------------- assembly
-def build_gold(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
+def assemble_gold(observations: pd.DataFrame, registry: Registry) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build the Gold table (PeriodIndex) and its column dictionary, without writing anything."""
     reference = to_monthly(observations, registry)
     rt = to_real_time(reference, registry)
     derived, derived_doc = derive_features(rt)
@@ -265,13 +266,25 @@ def build_gold(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
         ]
     )
 
-    out = gold_dir()
-    out.mkdir(parents=True, exist_ok=True)
+    return table, dictionary
+
+
+def to_flat(table: pd.DataFrame) -> pd.DataFrame:
+    """Gold table with ``month`` as a timestamp column — the storage format (Delta, CSV, Spark)."""
     export = table.copy()
     export.index = export.index.to_timestamp()
     export.index.name = "month"
-    version = write_table(export.reset_index(), out / "model_table_monthly")
-    export.to_csv(out / "model_table_monthly.csv", float_format="%.4f")
+    return export.reset_index()
+
+
+def build_gold(observations: pd.DataFrame, registry: Registry) -> pd.DataFrame:
+    """Assemble Gold and write it to the local lakehouse (Delta table + CSV + dictionary)."""
+    table, dictionary = assemble_gold(observations, registry)
+    out = gold_dir()
+    out.mkdir(parents=True, exist_ok=True)
+    flat = to_flat(table)
+    version = write_table(flat, out / "model_table_monthly")
+    flat.to_csv(out / "model_table_monthly.csv", float_format="%.4f", index=False)
     dictionary.to_csv(out / "column_dictionary.csv", index=False)
     log.info("Gold: %d months x %d columns, Delta version %d", *table.shape, version)
     return table

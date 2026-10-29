@@ -90,19 +90,34 @@ Outputs:
 | `data/gold/model_table_monthly/` (Delta, + `.csv`) | one row per month since 1990: raw features, derived features, targets |
 | `data/gold/column_dictionary.csv` | role and meaning of every column |
 
+## Running on Databricks
+
+The same pipeline is deployed to Databricks with a **Databricks Asset Bundle**
+([`databricks.yml`](databricks.yml)): Unity Catalog schema and Volume, three serverless notebooks
+(Bronze → Silver → Gold) and a daily scheduled Job. Gold columns carry their descriptions as Unity Catalog
+comments, and every run is a new Delta version. Setup: [`docs/databricks.md`](docs/databricks.md).
+
+```bash
+databricks bundle deploy -t prod && databricks bundle run cfl_daily_refresh -t prod
+```
+
 ## Repository layout
 
 ```
 config/sources.yaml          series registry
 src/cfl/                     pipeline package (CLI: `cfl`)
-  sources/{valet,statcan,fred}.py   API clients (fetch raw / parse)
-  bronze.py  silver.py  gold.py     medallion layers
-  cli.py
+  sources/{valet,statcan,fred,census}.py   API clients (fetch raw / parse)
+  bronze.py  silver.py  gold.py            medallion layers
+  storage.py                               Delta tables (delta-rs)
+  cli.py  databricks.py                    CLI; Unity Catalog publishing helpers
+databricks/notebooks/        Databricks job tasks (01 Bronze, 02 Silver, 03 Gold)
+databricks.yml               Databricks Asset Bundle (schema, volume, daily job)
 tests/                       offline tests on recorded-format payloads
 notebooks/
   01_data_discovery_series_exploration.ipynb   catalog exploration (15,906 Valet series → selection)
   02_series_metadata_verification.ipynb        coverage and quality checks of the selection
 docs/data_dictionary_selected_series.md        financial meaning of the series
+docs/databricks.md                             Databricks setup and deployment
 discovery/                   raw catalog extraction and outputs
 ```
 
@@ -110,6 +125,7 @@ discovery/                   raw catalog extraction and outputs
 
 - [x] Phase 1 — Data discovery: catalog exploration, series selection, quality checks
 - [x] Phase 2 — Pipeline: multi-source ingestion, Bronze/Silver/Gold, real-time alignment, tests
+- [x] Phase 2b — Databricks: Asset Bundle, Unity Catalog tables, daily serverless Job
 - [ ] Phase 3 — Baselines: random walk, AR(p), Bank-target (2 %) benchmark; rolling-origin backtest
 - [ ] Phase 4 — Models: penalised regression, gradient boosting; ordinal / multinomial model for problem B
 - [ ] Phase 5 — Interpretation: SHAP, error analysis on 2008, 2020–22 and the 2026 energy shock

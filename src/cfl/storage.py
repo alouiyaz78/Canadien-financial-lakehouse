@@ -12,12 +12,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
-from deltalake import DeltaTable, write_deltalake
 
 
 def write_table(frame: pd.DataFrame, path: Path) -> int:
     """Overwrite the table with ``frame`` (schema changes allowed) and return the new version number."""
+    import pyarrow as pa
+    from deltalake import DeltaTable, write_deltalake
+
     path.parent.mkdir(parents=True, exist_ok=True)
     table = pa.Table.from_pandas(frame, preserve_index=False)
     write_deltalake(str(path), table, mode="overwrite", schema_mode="overwrite")
@@ -25,11 +26,15 @@ def write_table(frame: pd.DataFrame, path: Path) -> int:
 
 
 def read_table(path: Path, version: int | None = None) -> pd.DataFrame:
+    from deltalake import DeltaTable
+
     table = DeltaTable(str(path), version=version) if version is not None else DeltaTable(str(path))
     return table.to_pandas()
 
 
 def history(path: Path) -> pd.DataFrame:
+    from deltalake import DeltaTable
+
     records = DeltaTable(str(path)).history()
     frame = pd.DataFrame(records)
     keep = [c for c in ("version", "timestamp", "operation") if c in frame.columns]

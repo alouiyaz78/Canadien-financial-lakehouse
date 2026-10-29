@@ -63,7 +63,9 @@ def lake(tmp_lake, registry, fake_payloads, monkeypatch):
 def test_bronze_writes_raw_files_and_manifest(lake):
     root = lake["root"]
     assert len(list((root / "bronze").rglob("*.json"))) == 4
-    assert len((root / "bronze" / "_manifest.jsonl").read_text().splitlines()) == 4
+    manifest = bronze.read_manifest()
+    assert len(manifest) == 4 and set(manifest["status"]) == {"ok"}
+    assert len(list((root / "bronze" / "_manifest").glob("run_*.jsonl"))) == 1
 
 
 def test_silver_quality_report(lake):
