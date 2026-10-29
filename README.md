@@ -71,12 +71,16 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.12+.
 
 ```bash
 uv sync                      # install dependencies
+export CENSUS_API_KEY=...    # free key for the tariff series: https://api.census.gov/data/key_signup.html
 uv run cfl verify-sources    # check every series id against the source catalogs
 uv run cfl run               # ingest → silver → gold
 uv run cfl status            # last observation of each series
 uv run cfl history           # Delta versions of Silver and Gold
 uv run pytest                # tests (offline, synthetic payloads)
 ```
+
+Without `CENSUS_API_KEY` the three tariff-rate series are reported as failed and skipped; the rest of the
+pipeline still runs.
 
 Outputs:
 

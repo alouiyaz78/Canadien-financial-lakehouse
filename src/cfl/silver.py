@@ -66,7 +66,12 @@ def build_silver(specs: list[SeriesSpec]) -> tuple[pd.DataFrame, pd.DataFrame]:
         if snapshot is None:
             log.warning("no Bronze snapshot for %s — run `cfl ingest` first", spec.name)
             continue
-        raw = client_for(spec.source).parse(snapshot.read_bytes(), spec)
+        try:
+            raw = client_for(spec.source).parse(snapshot.read_bytes(), spec)
+        except Exception as exc:  # noqa: BLE001 — a corrupt snapshot skips one series, not the whole layer
+            log.error("cannot parse %s (%s): %s — series skipped", spec.name, snapshot.name, exc)
+            reports.append({"name": spec.name, "source": spec.source, "parse_error": str(exc)[:200]})
+            continue
         frame, quality = clean_series(raw, spec)
         quality["bronze_snapshot"] = snapshot.name
         frames.append(frame)

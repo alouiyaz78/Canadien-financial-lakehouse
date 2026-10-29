@@ -59,7 +59,7 @@ def test_census_effective_tariff_rate():
     from cfl.sources import census
 
     payload = (
-        b'[["CTY_NAME","GEN_VAL_MO","CAL_DUT_MO","CTY_CODE","time"],'
+        b'[["CTY_NAME","CON_VAL_MO","CAL_DUT_MO","CTY_CODE","time"],'
         b'["CANADA","30000000000","300000000","1220","2025-04"],'
         b'["CANADA","0","0","1220","2025-05"]]'
     )
@@ -67,3 +67,29 @@ def test_census_effective_tariff_rate():
     assert frame["value"].iloc[0] == 1.0
     assert frame["date"].iloc[0] == pd.Timestamp("2025-04-01")
     assert pd.isna(frame["value"].iloc[1])
+
+
+def test_census_requires_key_and_rejects_html(monkeypatch):
+    import pytest
+
+    from cfl.sources import census
+    from cfl.sources.base import make_session
+
+    monkeypatch.delenv("CENSUS_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="CENSUS_API_KEY"):
+        census.fetch(spec(source="census", source_id="1220"), make_session())
+
+    class FakeResponse:
+        status_code = 200
+        text = "<html><body>Invalid Key</body></html>"
+
+        def json(self):
+            raise ValueError("not json")
+
+    class FakeSession:
+        def get(self, *args, **kwargs):
+            return FakeResponse()
+
+    monkeypatch.setenv("CENSUS_API_KEY", "abc")
+    with pytest.raises(RuntimeError, match="not JSON: <html><body>Invalid Key"):
+        census.fetch(spec(source="census", source_id="1220"), FakeSession())

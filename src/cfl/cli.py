@@ -57,6 +57,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
 def _cmd_status(_: argparse.Namespace) -> int:
     report = pd.read_csv(silver.silver_dir() / "quality_report.csv")
     cols = ["name", "source", "frequency", "first_date", "last_date", "last_value", "n_clean"]
+    if "parse_error" in report.columns:
+        cols.append("parse_error")
     with pd.option_context("display.width", 160, "display.max_rows", 200):
         print(report[cols].to_string(index=False))
     return 0
@@ -70,6 +72,9 @@ def _cmd_history(_: argparse.Namespace) -> int:
         ("gold/model_table_monthly", gold.gold_dir() / "model_table_monthly"),
     ]:
         print(f"\n{label}")
+        if not (path / "_delta_log").exists():
+            print("  (no Delta table yet — run `uv run cfl run`)")
+            continue
         print(history(path).to_string(index=False))
     return 0
 
