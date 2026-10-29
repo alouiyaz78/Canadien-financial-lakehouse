@@ -149,3 +149,22 @@ def test_survey_quarter_stamped_on_first_month():
     panel = gold.to_monthly(obs, reg)
     assert panel.loc[pd.Period("2022-01", "M"), "survey"] == 1.0
     assert panel.loc[pd.Period("2022-04", "M"), "survey"] == 2.0
+
+
+def test_unchanged_payload_writes_no_new_snapshot(lake, registry):
+    root = lake["root"]
+    before = sorted((root / "bronze").rglob("*.json"))
+    results = bronze.ingest(registry.series, run_id="run-2")
+    after = sorted((root / "bronze").rglob("*.json"))
+    assert [r.changed for r in results] == [False] * 4
+    assert len([p for p in after if "_manifest" not in str(p)]) == len([p for p in before if "_manifest" not in str(p)])
+    manifest = bronze.read_manifest()
+    second_run = manifest[manifest["run_id"] == "run-2"]
+    assert len(second_run) == 4 and not second_run["changed"].any()
+
+
+def test_changed_payload_writes_new_snapshot(lake, registry, fake_payloads):
+    fake_payloads["cpi_trim"] = valet_payload("CPI_TRIM", [("2026-01-01", "9.9")])
+    results = {r.name: r for r in bronze.ingest(registry.series, run_id="run-3")}
+    assert results["cpi_trim"].changed and not results["policy_rate"].changed
+    assert len(list((lake["root"] / "bronze" / "valet" / "cpi_trim").glob("*.json"))) == 2

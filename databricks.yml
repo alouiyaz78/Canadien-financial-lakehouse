@@ -1,6 +1,6 @@
 # Databricks Asset Bundle — deploys the whole lakehouse to a Databricks workspace:
 #   * Unity Catalog schema + managed Volume (raw Bronze files)
-#   * a daily serverless Job: Bronze → Silver → Gold
+#   * a daily serverless Job: 4 parallel ingestions → audit/freshness → change gate → Silver (MERGE) → Gold
 #
 #   databricks bundle validate
 #   databricks bundle deploy -t prod
@@ -40,10 +40,13 @@ resources:
   jobs:
     cfl_daily_refresh:
       name: cfl-daily-refresh
-      description: "Ingest Bank of Canada / StatCan / FRED / Census data and rebuild the Silver and Gold tables."
+      description: >-
+        Poll Bank of Canada / StatCan / FRED / Census in parallel; store raw payloads only when they
+        changed; publish the ingestion log and freshness report; rebuild Silver (MERGE) and Gold only
+        if at least one series changed.
       max_concurrent_runs: 1
       schedule:
-        # Every day at 07:43 Toronto time, after the previous day's Valet publications.
+        # Daily polling: release dates vary, so the job checks every morning and only works when needed.
         quartz_cron_expression: "0 43 7 * * ?"
         timezone_id: America/Toronto
         pause_status: UNPAUSED
@@ -52,15 +55,62 @@ resources:
           default: ${var.catalog}
         - name: schema
           default: ${resources.schemas.cfl.name}
+        - name: run_id
+          default: "{{job.run_id}}"
+        - name: full_refresh
+          default: "false"
       tasks:
-        - task_key: bronze_ingest
+        # 1. Bronze: one task per source, in parallel, each with its own retry.
+        - task_key: ingest_valet
           notebook_task:
             notebook_path: ./databricks/notebooks/01_bronze_ingest.py
+            base_parameters: {source: valet}
           max_retries: 1
           min_retry_interval_millis: 600000
+        - task_key: ingest_statcan
+          notebook_task:
+            notebook_path: ./databricks/notebooks/01_bronze_ingest.py
+            base_parameters: {source: statcan}
+          max_retries: 1
+          min_retry_interval_millis: 600000
+        - task_key: ingest_fred
+          notebook_task:
+            notebook_path: ./databricks/notebooks/01_bronze_ingest.py
+            base_parameters: {source: fred}
+          max_retries: 1
+          min_retry_interval_millis: 600000
+        - task_key: ingest_census
+          notebook_task:
+            notebook_path: ./databricks/notebooks/01_bronze_ingest.py
+            base_parameters: {source: census}
+          max_retries: 1
+          min_retry_interval_millis: 600000
+
+        # 2. Audit: runs even if a source failed; ingestion log, freshness report, change flag.
+        - task_key: audit_freshness
+          run_if: ALL_DONE
+          depends_on:
+            - task_key: ingest_valet
+            - task_key: ingest_statcan
+            - task_key: ingest_fred
+            - task_key: ingest_census
+          notebook_task:
+            notebook_path: ./databricks/notebooks/01b_audit_freshness.py
+
+        # 3. Gate: skip Silver/Gold when nothing changed.
+        - task_key: any_changes
+          depends_on:
+            - task_key: audit_freshness
+          condition_task:
+            op: EQUAL_TO
+            left: "{{tasks.audit_freshness.values.any_changed}}"
+            right: "true"
+
+        # 4. Silver (incremental MERGE) and Gold.
         - task_key: silver_transform
           depends_on:
-            - task_key: bronze_ingest
+            - task_key: any_changes
+              outcome: "true"
           notebook_task:
             notebook_path: ./databricks/notebooks/02_silver_transform.py
         - task_key: gold_model_table

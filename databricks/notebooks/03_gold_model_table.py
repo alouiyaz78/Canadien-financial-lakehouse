@@ -23,13 +23,18 @@ dbutils.library.restartPython()  # noqa: F821
 import pathlib
 import sys
 
-dbutils.widgets.text("catalog", "workspace")  # noqa: F821
-dbutils.widgets.text("schema", "cfl")  # noqa: F821
-catalog = dbutils.widgets.get("catalog")  # noqa: F821
-schema = dbutils.widgets.get("schema")  # noqa: F821
+WIDGETS = [('catalog', 'workspace'), ('schema', 'cfl')]
+for name, default in WIDGETS:
+    dbutils.widgets.text(name, default)  # noqa: F821
+params = {name: dbutils.widgets.get(name) for name, _ in WIDGETS}  # noqa: F821
+catalog, schema = params["catalog"], params["schema"]
 
+# The notebook lives in <repo>/databricks/notebooks: put <repo>/src on the import path.
 REPO_ROOT = pathlib.Path.cwd().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
+
+
+import pandas as pd  # noqa: E402
 
 from cfl import databricks as cfl_dbx  # noqa: E402
 from cfl import gold  # noqa: E402
@@ -39,9 +44,11 @@ cfl_dbx.configure(catalog, schema, dbutils)  # noqa: F821
 
 # COMMAND ----------
 
-observations = spark.table(f"{catalog}.{schema}.silver_observations").toPandas()  # noqa: F821
+observations = spark.table(f"{catalog}.{schema}.silver_observations").drop("run_id", "updated_at").toPandas()  # noqa: F821
+observations["date"] = pd.to_datetime(observations["date"])
 table, dictionary = gold.assemble_gold(observations, load_registry())
 flat = gold.to_flat(table)
+flat[flat.select_dtypes("float").columns] = flat.select_dtypes("float").round(4)
 
 gold_table = f"{catalog}.{schema}.gold_model_table_monthly"
 cfl_dbx.save_table(
@@ -50,6 +57,7 @@ cfl_dbx.save_table(
     gold_table,
     comment="Monthly model table since 1990: real-time features (lagged by publication delay) and targets "
     "for core-inflation forecasting (A) and policy-rate direction (B).",
+    date_columns=["month"],
 )
 cfl_dbx.save_column_comments(spark, gold_table, dictionary)  # noqa: F821
 cfl_dbx.save_table(

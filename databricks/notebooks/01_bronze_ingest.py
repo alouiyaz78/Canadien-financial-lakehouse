@@ -1,11 +1,11 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 01 · Bronze — ingest raw API data
-# MAGIC Downloads every series of `config/sources.yaml` (Bank of Canada Valet, Statistics Canada,
-# MAGIC FRED, US Census) and stores the **raw responses, untouched**, in the Unity Catalog Volume
-# MAGIC `/Volumes/<catalog>/<schema>/lake/bronze/`. Each run adds a new timestamped snapshot.
+# MAGIC # 01 · Bronze — ingest one source
+# MAGIC Downloads every series of **one source** (`source` parameter: valet, statcan, fred or census) and stores the
+# MAGIC raw responses, untouched, in the Unity Catalog Volume `/Volumes/<catalog>/<schema>/lake/bronze/`.
 # MAGIC
-# MAGIC The ingestion log is published as the table `bronze_ingestion_log`.
+# MAGIC A new snapshot is written **only if the payload changed** (SHA-256 compared with the latest snapshot), so
+# MAGIC re-running the job is idempotent. The job runs one instance of this notebook per source, in parallel.
 
 # COMMAND ----------
 
@@ -20,47 +20,39 @@ dbutils.library.restartPython()  # noqa: F821
 import pathlib
 import sys
 
-dbutils.widgets.text("catalog", "workspace")  # noqa: F821
-dbutils.widgets.text("schema", "cfl")  # noqa: F821
-catalog = dbutils.widgets.get("catalog")  # noqa: F821
-schema = dbutils.widgets.get("schema")  # noqa: F821
+WIDGETS = [('catalog', 'workspace'), ('schema', 'cfl'), ('source', 'valet'), ('run_id', 'manual')]
+for name, default in WIDGETS:
+    dbutils.widgets.text(name, default)  # noqa: F821
+params = {name: dbutils.widgets.get(name) for name, _ in WIDGETS}  # noqa: F821
+catalog, schema = params["catalog"], params["schema"]
 
 # The notebook lives in <repo>/databricks/notebooks: put <repo>/src on the import path.
 REPO_ROOT = pathlib.Path.cwd().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema}")  # noqa: F821
-spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.lake")  # noqa: F821
-
 from cfl import bronze  # noqa: E402
 from cfl import databricks as cfl_dbx  # noqa: E402
 from cfl.config import load_registry  # noqa: E402
 
-lake = cfl_dbx.configure(catalog, schema, dbutils)  # noqa: F821
-print("Lake root:", lake)
+cfl_dbx.configure(catalog, schema, dbutils)  # noqa: F821
+spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.lake")  # noqa: F821
 
 # COMMAND ----------
 
-registry = load_registry()
-results = bronze.ingest(registry.series)
+source = params["source"]
+specs = load_registry().select(source=source)
+results = bronze.ingest(specs, run_id=params["run_id"], tag=source)
 
 failed = [r for r in results if not r.ok]
-print(f"Bronze: {len(results) - len(failed)}/{len(results)} series ingested")
-for r in failed:
-    print(f"  FAILED {r.name}: {r.error}")
+changed = [r.name for r in results if r.changed]
+print(f"{source}: {len(results) - len(failed)}/{len(results)} fetched, {len(changed)} changed: {changed}")
+
+# Read by the audit task and visible in the job run UI.
+dbutils.jobs.taskValues.set(key="n_changed", value=len(changed))  # noqa: F821
 
 # COMMAND ----------
 
-cfl_dbx.save_table(
-    spark,  # noqa: F821
-    bronze.read_manifest(),
-    f"{catalog}.{schema}.bronze_ingestion_log",
-    comment="One row per series per ingestion run: URL, size, SHA-256 of the raw payload, status.",
-)
-
-# COMMAND ----------
-
-# Fail the job if a core source is down; the Census tariff series alone are tolerated (key may be missing).
-critical = [r.name for r in failed if registry.by_name()[r.name].source != "census"]
-if critical:
-    raise RuntimeError(f"Ingestion failed for core series: {critical}")
+# Census is tolerated without its API key; any other failure marks this task (and the run) as failed.
+# Downstream tasks still run (run_if: ALL_DONE) with the sources that succeeded.
+if failed and source != "census":
+    raise RuntimeError(f"{source}: ingestion failed for {[(r.name, r.error) for r in failed]}")

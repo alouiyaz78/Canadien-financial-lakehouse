@@ -15,6 +15,8 @@
 #                     (no look-ahead leakage). Financial market data = 0.
 #   quarter_stamp     quarterly series only: "end" (default) for data describing the whole quarter,
 #                     "start" for surveys dated when they are conducted (BOS, Consensus Forecasts)
+#   stale_after_days  optional: age (days) of the latest observation after which the series is flagged
+#                     "late" in the freshness report. Default derived from frequency and release lag.
 #   verified          true when the id was checked against the source catalog.
 #                     StatCan vectors set to false must be checked with `uv run cfl verify-sources`.
 
@@ -83,13 +85,13 @@ series:
 
   # ---------------------------------------------------------------- Tariffs and trade policy
   # No official "tariff rate" time series exists for Canada; these are the standard proxies.
-  - {name: us_tariff_rate_on_canada, source: census, source_id: "1220", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: false,
+  - {name: us_tariff_rate_on_canada, source: census, source_id: "1220", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: true,
      description: "Effective US tariff rate on imports from Canada (duties collected / import value)"}
-  - {name: us_tariff_rate_on_mexico, source: census, source_id: "2010", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: false,
+  - {name: us_tariff_rate_on_mexico, source: census, source_id: "2010", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: true,
      description: "Effective US tariff rate on imports from Mexico (CUSMA partner, comparison)"}
-  - {name: us_tariff_rate_on_china, source: census, source_id: "5700", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: false,
+  - {name: us_tariff_rate_on_china, source: census, source_id: "5700", frequency: M, domain: trade_policy, unit: "% of import value", monthly_agg: last, release_lag_months: 2, verified: true,
      description: "Effective US tariff rate on imports from China (trade-diversion channel)"}
-  - {name: trade_policy_uncertainty, source: fred, source_id: EPUTRADE, frequency: M, domain: trade_policy, unit: "index", monthly_agg: last, release_lag_months: 0, verified: true,
+  - {name: trade_policy_uncertainty, source: fred, source_id: EPUTRADE, frequency: M, domain: trade_policy, unit: "index", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "Economic Policy Uncertainty — trade policy category (Baker, Bloom & Davis), monthly"}
   - {name: us_import_prices_from_canada, source: fred, source_id: CANTOT, frequency: M, domain: trade_policy, unit: "index 2000=100", monthly_agg: last, release_lag_months: 1, verified: true,
      description: "US import price index, goods from Canada, before duties (BLS) — do Canadian exporters absorb the tariff?"}

@@ -53,23 +53,42 @@ def _spark_ready(frame: pd.DataFrame) -> pd.DataFrame:
         elif pd.api.types.is_bool_dtype(dtype):
             out[col] = out[col].astype(bool)
         elif not pd.api.types.is_numeric_dtype(dtype):
-            # Plain Python strings / None in an object column (pandas 3 would otherwise infer "str").
-            values = [None if pd.isna(v) else str(v) for v in out[col].tolist()]
+            # Plain Python values / None in an object column (pandas 3 would otherwise infer "str").
+            raw = [None if (not isinstance(v, (list, dict)) and pd.isna(v)) else v for v in out[col].tolist()]
+            is_flag = all(isinstance(v, bool) for v in raw if v is not None) and any(v is not None for v in raw)
+            values = raw if is_flag else [None if v is None else str(v) for v in raw]
             out[col] = pd.Series(values, index=out.index, dtype=object)
     return out
 
 
-def save_table(spark: Any, frame: pd.DataFrame, table: str, comment: str = "") -> None:
-    """Overwrite a Unity Catalog managed Delta table with ``frame`` (new table version each run)."""
-    sdf = spark.createDataFrame(_spark_ready(frame))
+def sql_string(text: str) -> str:
+    """Quote ``text`` as a Spark SQL string literal (Spark escapes with backslashes, not doubled quotes)."""
+    return "'" + text.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def save_table(
+    spark: Any, frame: pd.DataFrame, table: str, comment: str = "", date_columns: tuple[str, ...] | list[str] = ()
+) -> None:
+    """Overwrite a Unity Catalog managed Delta table with ``frame`` (new table version each run).
+
+    ``date_columns`` are stored as DATE instead of TIMESTAMP (e.g. the Gold ``month``).
+    """
+    from cfl.spark_silver import nan_to_null
+
+    sdf = nan_to_null(spark.createDataFrame(_spark_ready(frame)))
+    if date_columns:
+        from pyspark.sql import functions as F
+
+        for col in date_columns:
+            sdf = sdf.withColumn(col, F.to_date(col))
     (sdf.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(table))
     if comment:
-        spark.sql(f"COMMENT ON TABLE {table} IS '{comment.replace(chr(39), chr(39) * 2)}'")
+        spark.sql(f"COMMENT ON TABLE {table} IS {sql_string(comment)}")
     log.info("UC table %s written (%d rows)", table, len(frame))
 
 
 def save_column_comments(spark: Any, table: str, dictionary: pd.DataFrame) -> None:
     """Attach each column's description from the Gold dictionary as a Unity Catalog column comment."""
     for row in dictionary.itertuples(index=False):
-        text = f"[{row.role}] {row.description}".replace("'", "''")[:1000]
-        spark.sql(f"ALTER TABLE {table} ALTER COLUMN `{row.column}` COMMENT '{text}'")
+        text = sql_string(f"[{row.role}] {row.description}"[:1000])
+        spark.sql(f"ALTER TABLE {table} ALTER COLUMN `{row.column}` COMMENT {text}")

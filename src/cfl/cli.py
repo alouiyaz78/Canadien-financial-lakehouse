@@ -3,7 +3,8 @@
 cfl ingest [--only NAME ...] [--source SOURCE]               download raw data (Bronze)
 cfl silver                                                    parse + quality report
 cfl gold                                                      monthly model table
-cfl run                                                       ingest + silver + gold
+cfl run [--force]                                             ingest, then silver + gold only if data changed
+cfl freshness                                                 flag series whose latest observation is late
 cfl status                                                    last observation per series
 cfl history                                                   Delta versions of Silver and Gold (time travel)
 cfl verify-sources                                            check ids against source metadata
@@ -25,14 +26,24 @@ from cfl.sources.base import make_session
 log = logging.getLogger("cfl")
 
 
-def _cmd_ingest(args: argparse.Namespace) -> int:
+def _ingest(args: argparse.Namespace) -> list[bronze.IngestResult]:
     specs = load_registry().select(args.only, args.source)
-    results = bronze.ingest(specs)
+    results = bronze.ingest(specs, tag=args.source or "")
     failed = [r for r in results if not r.ok]
-    print(f"\nBronze: {len(results) - len(failed)}/{len(results)} series ingested into {data_dir() / 'bronze'}")
+    changed = [r.name for r in results if r.changed]
+    print(
+        f"\nBronze: {len(results) - len(failed)}/{len(results)} series fetched, "
+        f"{len(changed)} changed, into {data_dir() / 'bronze'}"
+    )
+    if changed:
+        print("  changed: " + ", ".join(changed))
     for r in failed:
         print(f"  FAILED {r.name}: {r.error}")
-    return 1 if failed else 0
+    return results
+
+
+def _cmd_ingest(args: argparse.Namespace) -> int:
+    return 1 if any(not r.ok for r in _ingest(args)) else 0
 
 
 def _cmd_silver(_: argparse.Namespace) -> int:
@@ -48,10 +59,27 @@ def _cmd_gold(_: argparse.Namespace) -> int:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
-    code = _cmd_ingest(args)
+    results = _ingest(args)
+    code = 1 if any(not r.ok for r in results) else 0
+    silver_exists = (silver.silver_dir() / "observations" / "_delta_log").exists()
+    if not (args.force or not silver_exists or any(r.changed for r in results)):
+        print("\nNo source changed since the last run: Silver and Gold are up to date (use --force to rebuild).")
+        return code
     _cmd_silver(args)
     _cmd_gold(args)
     return code
+
+
+def _cmd_freshness(_: argparse.Namespace) -> int:
+    from cfl.freshness import freshness_report
+
+    report = pd.read_csv(silver.silver_dir() / "quality_report.csv", parse_dates=["last_date"])
+    fresh = freshness_report(report.set_index("name")["last_date"], load_registry())
+    with pd.option_context("display.width", 160, "display.max_rows", 200):
+        print(fresh.drop(columns="checked_at").to_string(index=False))
+    late = fresh[fresh["status"] != "ok"]
+    print(f"\n{len(late)} series late or missing" if len(late) else "\nAll series are fresh.")
+    return 1 if len(late) else 0
 
 
 def _cmd_status(_: argparse.Namespace) -> int:
@@ -108,6 +136,8 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=help_text)
         p.add_argument("--only", nargs="+", metavar="NAME", help="restrict to these series names")
         p.add_argument("--source", choices=["valet", "statcan", "fred", "census"])
+        if name == "run":
+            p.add_argument("--force", action="store_true", help="rebuild Silver and Gold even if nothing changed")
         p.set_defaults(func=func)
 
     for name, func, help_text in [
@@ -115,6 +145,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("gold", _cmd_gold, "build the monthly model table"),
         ("status", _cmd_status, "show last observation per series"),
         ("history", _cmd_history, "list Delta table versions (time travel)"),
+        ("freshness", _cmd_freshness, "flag series whose latest observation is late"),
         ("verify-sources", _cmd_verify, "check series ids against source metadata"),
     ]:
         sub.add_parser(name, help=help_text).set_defaults(func=func)

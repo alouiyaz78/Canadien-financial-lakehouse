@@ -93,9 +93,10 @@ Outputs:
 ## Running on Databricks
 
 The same pipeline is deployed to Databricks with a **Databricks Asset Bundle**
-([`databricks.yml`](databricks.yml)): Unity Catalog schema and Volume, three serverless notebooks
-(Bronze → Silver → Gold) and a daily scheduled Job. Gold columns carry their descriptions as Unity Catalog
-comments, and every run is a new Delta version. Setup: [`docs/databricks.md`](docs/databricks.md).
+([`databricks.yml`](databricks.yml)): Unity Catalog schema and Volume, and a daily serverless Job —
+4 parallel source ingestions → audit/freshness → change gate → incremental Silver `MERGE` → Gold — that
+only rebuilds when a source published something new. Gold columns carry their descriptions as Unity
+Catalog comments, and every run is a new Delta version. Setup: [`docs/databricks.md`](docs/databricks.md).
 
 ```bash
 databricks bundle deploy -t prod && databricks bundle run cfl_daily_refresh -t prod
@@ -110,7 +111,7 @@ src/cfl/                     pipeline package (CLI: `cfl`)
   bronze.py  silver.py  gold.py            medallion layers
   storage.py                               Delta tables (delta-rs)
   cli.py  databricks.py                    CLI; Unity Catalog publishing helpers
-databricks/notebooks/        Databricks job tasks (01 Bronze, 02 Silver, 03 Gold)
+databricks/notebooks/        Databricks job tasks (01 Bronze, 01b audit, 02 Silver, 03 Gold) + examples/
 databricks.yml               Databricks Asset Bundle (schema, volume, daily job)
 tests/                       offline tests on recorded-format payloads
 notebooks/

@@ -29,8 +29,26 @@ class SeriesSpec(BaseModel):
     monthly_agg: Literal["mean", "last"]
     release_lag_months: int = Field(ge=0, le=6)
     quarter_stamp: Literal["start", "end"] = "end"
+    stale_after_days: int | None = Field(default=None, ge=1)
     verified: bool = False
     description: str = ""
+
+    def max_age_days(self) -> int:
+        """Age of the latest observation beyond which the series is considered late.
+
+        Defaults derive from the frequency and the publication lag: a monthly value dated the 1st
+        covers the month (~31 days), is published ``release_lag_months`` later, on any day of that
+        month (~31 days), plus one week of tolerance.
+        """
+        if self.stale_after_days is not None:
+            return self.stale_after_days
+        if self.frequency == "D":
+            return 7
+        if self.frequency == "W":
+            return 14
+        if self.frequency == "M":
+            return 31 * (self.release_lag_months + 2) + 7
+        return 92 * 2 + 31 * self.release_lag_months + 7  # quarterly
 
     @field_validator("source_id", mode="before")
     @classmethod

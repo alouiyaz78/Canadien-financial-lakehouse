@@ -5,8 +5,10 @@ Layout::
     data/bronze/<source>/<series_name>/<UTC timestamp>.<json|csv>
     data/bronze/_manifest/run_<UTC timestamp>.jsonl    one line per series of that run (audit trail)
 
-Raw files are never modified; every run adds new snapshots. Keeping snapshots
-gives a free audit trail of data revisions (StatCan revises GDP and LFS data).
+Raw files are never modified. A new snapshot is written **only when the payload
+changed** (SHA-256 differs from the latest snapshot): new observations or a
+revision (StatCan revises GDP and LFS data). Unchanged series are recorded in the
+manifest with ``changed = false`` and downstream layers can skip them.
 Files are only ever created, never appended to, so the same code works on a
 local disk and on a Databricks Unity Catalog Volume.
 """
@@ -37,15 +39,24 @@ class IngestResult:
     error: str | None = None
     record: dict = field(default_factory=dict)
 
+    @property
+    def changed(self) -> bool:
+        return bool(self.record.get("changed"))
+
 
 def bronze_dir() -> Path:
     return data_dir() / "bronze"
 
 
-def ingest_series(spec: SeriesSpec, session=None) -> IngestResult:
+def _sha256(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def ingest_series(spec: SeriesSpec, session=None, run_id: str | None = None) -> IngestResult:
     session = session or make_session()
     ingested_at = datetime.now(UTC)
     record = {
+        "run_id": run_id,
         "name": spec.name,
         "source": spec.source,
         "source_id": spec.source_id,
@@ -58,25 +69,34 @@ def ingest_series(spec: SeriesSpec, session=None) -> IngestResult:
         record |= {"status": "error", "error": str(exc)[:500]}
         return IngestResult(spec.name, ok=False, path=None, error=str(exc), record=record)
 
-    target = bronze_dir() / spec.source / spec.name / f"{ingested_at:%Y%m%dT%H%M%S%fZ}.{payload.extension}"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(payload.content)
+    digest = _sha256(payload.content)
+    previous = latest_snapshot(spec)
+    changed = previous is None or _sha256(previous.read_bytes()) != digest
+    if changed:
+        target = bronze_dir() / spec.source / spec.name / f"{ingested_at:%Y%m%dT%H%M%S%fZ}.{payload.extension}"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload.content)
+    else:
+        target = previous  # identical payload: keep the existing snapshot, write nothing
     record |= {
         "status": "ok",
+        "changed": changed,
         "url": payload.url,
         "path": str(target.relative_to(data_dir())),
         "bytes": len(payload.content),
-        "sha256": hashlib.sha256(payload.content).hexdigest(),
+        "sha256": digest,
     }
-    log.info("ok     %-28s %8d bytes", spec.name, len(payload.content))
+    log.info("%-6s %-28s %8d bytes", "NEW" if changed else "same", spec.name, len(payload.content))
     return IngestResult(spec.name, ok=True, path=target, record=record)
 
 
-def ingest(specs: list[SeriesSpec]) -> list[IngestResult]:
+def ingest(specs: list[SeriesSpec], run_id: str | None = None, tag: str = "") -> list[IngestResult]:
+    """Ingest ``specs``; one manifest file per call (``tag`` distinguishes parallel tasks, e.g. a source)."""
     session = make_session()
     started = datetime.now(UTC)
-    results = [ingest_series(spec, session) for spec in specs]
-    manifest = bronze_dir() / "_manifest" / f"run_{started:%Y%m%dT%H%M%S%fZ}.jsonl"
+    results = [ingest_series(spec, session, run_id) for spec in specs]
+    suffix = f"_{tag}" if tag else ""
+    manifest = bronze_dir() / "_manifest" / f"run_{started:%Y%m%dT%H%M%S%fZ}{suffix}.jsonl"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text("".join(json.dumps(r.record) + "\n" for r in results), encoding="utf-8")
     return results
