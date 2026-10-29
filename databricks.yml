@@ -19,16 +19,8 @@ variables:
     description: Schema holding the Volume and all tables
     default: cfl
 
-sync:
-  include:
-    - src/**
-    - config/**
-    - databricks/**
-  exclude:
-    - data/**
-    - .venv/**
-    - discovery/**
-    - notebooks/**
+# Files synced to the workspace = everything not in .gitignore (data/ and .venv/ are ignored).
+# Do not add "notebooks/**" to sync.exclude: gitignore-style patterns also match databricks/notebooks/.
 
 resources:
   schemas:
