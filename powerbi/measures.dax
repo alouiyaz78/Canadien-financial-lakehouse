@@ -54,7 +54,8 @@ Real Policy Rate = AVERAGE ( bi_mart_macro_monthly[real_policy_rate] )
 Market-Implied Move 6M (bp) = AVERAGE ( bi_mart_macro_monthly[market_implied_6m_bp] )
 
 Market Pricing Label =
-VAR Bp = CALCULATE ( [Market-Implied Move 6M (bp)], LASTDATE ( bi_mart_macro_monthly[month] ) )
+VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[market_implied_6m_bp] ) )
+VAR Bp = CALCULATE ( [Market-Implied Move 6M (bp)], bi_mart_macro_monthly[month] = M )
 RETURN
     SWITCH ( TRUE (), Bp >= 15, "Markets price hikes", Bp <= -15, "Markets price cuts", "Markets price a hold" )
 
@@ -71,7 +72,9 @@ AVERAGEX (
 Taylor Gap = [Policy Rate] - [Taylor Rule Rate]
 
 Taylor Reading =
-VAR Gap = CALCULATE ( [Taylor Gap], LASTDATE ( bi_mart_macro_monthly[month] ) )
+// Latest month with core inflation published (the current month is still empty)
+VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[taylor_rule_rate] ) )
+VAR Gap = CALCULATE ( [Taylor Gap], bi_mart_macro_monthly[month] = M )
 RETURN
     SWITCH (
         TRUE (),
@@ -184,7 +187,8 @@ RETURN [US Tariff on Canada (%)] - Before
 
 // Negative = Canadian exporters cut their prices, i.e. absorb part of the tariff
 Exporter Absorption Reading =
-VAR P = CALCULATE ( [US Import Prices from Canada (y/y %)], LASTDATE ( bi_mart_macro_monthly[month] ) )
+VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_import_prices_from_canada_yoy] ) )
+VAR P = CALCULATE ( [US Import Prices from Canada (y/y %)], bi_mart_macro_monthly[month] = M )
 RETURN
     IF ( P < 0, "Canadian exporters are cutting prices (absorbing tariffs)", "No sign of price absorption by Canadian exporters" )
 
@@ -239,7 +243,8 @@ RETURN CALCULATE ( AVERAGE ( bi_fact_yield_curve[yield_pct] ), bi_fact_yield_cur
 10Y-2Y Spread = AVERAGE ( bi_mart_macro_monthly[term_spread_10y_2y] )
 
 Curve Inverted =
-IF ( CALCULATE ( [10Y-2Y Spread], LASTDATE ( bi_mart_macro_monthly[month] ) ) < 0, "Inverted", "Normal" )
+VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[term_spread_10y_2y] ) )
+RETURN IF ( CALCULATE ( [10Y-2Y Spread], bi_mart_macro_monthly[month] = M ) < 0, "Inverted", "Normal" )
 
 
 // ---------------------------------------------------------------- 5 · Pipeline health (bonus)
