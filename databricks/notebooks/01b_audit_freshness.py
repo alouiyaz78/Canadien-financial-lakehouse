@@ -63,7 +63,7 @@ cfl_dbx.save_table(
     spark,  # noqa: F821
     fresh,
     f"{catalog}.{schema}.freshness_report",
-    comment="Is each series as recent as its publication calendar implies? status = ok | late | missing.",
+    comment="Is each series as recent as its publication calendar implies? status = ok | late | missing | retired (discontinued series).",
 )
 display(fresh)  # noqa: F821
 

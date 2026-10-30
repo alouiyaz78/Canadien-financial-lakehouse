@@ -17,6 +17,7 @@
 #                     "start" for surveys dated when they are conducted (BOS, Consensus Forecasts)
 #   stale_after_days  optional: age (days) of the latest observation after which the series is flagged
 #                     "late" in the freshness report. Default derived from frequency and release lag.
+#   discontinued      true for series stopped at the source and kept only for history (no freshness alert)
 #   verified          true when the id was checked against the source catalog.
 #                     StatCan vectors set to false must be checked with `uv run cfl verify-sources`.
 
@@ -39,7 +40,7 @@ series:
 
   # ---------------------------------------------------------------- Exchange rates
   - {name: usdcad, source: valet, source_id: FXUSDCAD, frequency: D, domain: fx, unit: "CAD per USD", monthly_agg: mean, release_lag_months: 0, verified: true, description: "USD/CAD daily rate (2017+)"}
-  - {name: usdcad_noon_legacy, source: valet, source_id: IEXE0101, frequency: D, domain: fx, unit: "CAD per USD", monthly_agg: mean, release_lag_months: 0, verified: true,
+  - {name: usdcad_noon_legacy, source: valet, source_id: IEXE0101, frequency: D, domain: fx, unit: "CAD per USD", monthly_agg: mean, release_lag_months: 0, discontinued: true, verified: true,
      description: "USD/CAD legacy noon rate (discontinued 2017) — spliced with usdcad in Gold to extend history"}
   - {name: ceer_nominal, source: valet, source_id: CEER_BROADNM, frequency: M, domain: fx, unit: "index", monthly_agg: last, release_lag_months: 0, verified: true,
      description: "Monthly nominal Canadian effective exchange rate (broad)"}
@@ -74,7 +75,8 @@ series:
      description: "GDP at basic prices, all industries, seasonally adjusted (table 36-10-0434-01)"}
 
   # ---------------------------------------------------------------- Money and credit
-  - {name: m2pp_growth, source: valet, source_id: M2PP_12MTH, frequency: M, domain: money, unit: "% y/y", monthly_agg: last, release_lag_months: 1, verified: true, description: "M2++ year-over-year growth"}
+  - {name: m2pp_growth, source: valet, source_id: M2PP_12MTH, frequency: M, domain: money, unit: "% y/y", monthly_agg: last, release_lag_months: 2, verified: true,
+     description: "M2++ year-over-year growth (published ~2 months after the reference month)"}
   - {name: mortgage_5y, source: valet, source_id: V80691335, frequency: W, domain: banking, unit: "%", monthly_agg: mean, release_lag_months: 0, verified: true, description: "Conventional 5-year mortgage rate"}
 
   # ---------------------------------------------------------------- United States (main external driver)

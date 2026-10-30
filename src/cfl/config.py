@@ -30,6 +30,7 @@ class SeriesSpec(BaseModel):
     release_lag_months: int = Field(ge=0, le=6)
     quarter_stamp: Literal["start", "end"] = "end"
     stale_after_days: int | None = Field(default=None, ge=1)
+    discontinued: bool = False  # series stopped at the source, kept for history only (no freshness alert)
     verified: bool = False
     description: str = ""
 

@@ -33,3 +33,9 @@ def test_freshness_flags_late_and_missing_series():
 def test_explicit_stale_after_days_overrides_default():
     assert spec(frequency="M", stale_after_days=10).max_age_days() == 10
     assert spec(frequency="M", release_lag_months=1).max_age_days() == 100
+
+
+def test_discontinued_series_is_retired_not_late():
+    registry = Registry(series=[spec(name="legacy_fx", frequency="D", discontinued=True)])
+    report = freshness_report(pd.Series({"legacy_fx": "2017-04-28"}), registry, pd.Timestamp("2026-10-30"))
+    assert report.set_index("name").loc["legacy_fx", "status"] == "retired"

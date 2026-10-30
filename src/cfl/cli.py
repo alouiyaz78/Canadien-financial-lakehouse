@@ -77,7 +77,7 @@ def _cmd_freshness(_: argparse.Namespace) -> int:
     fresh = freshness_report(report.set_index("name")["last_date"], load_registry())
     with pd.option_context("display.width", 160, "display.max_rows", 200):
         print(fresh.drop(columns="checked_at").to_string(index=False))
-    late = fresh[fresh["status"] != "ok"]
+    late = fresh[fresh["status"].isin(["late", "missing"])]
     print(f"\n{len(late)} series late or missing" if len(late) else "\nAll series are fresh.")
     return 1 if len(late) else 0
 
