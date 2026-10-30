@@ -41,6 +41,7 @@ import pandas as pd  # noqa: E402
 
 from cfl import bi  # noqa: E402
 from cfl import databricks as cfl_dbx  # noqa: E402
+from cfl.catalog_docs import apply_to_unity_catalog  # noqa: E402
 from cfl.config import load_registry  # noqa: E402
 
 cfl_dbx.configure(catalog, schema, dbutils)  # noqa: F821
@@ -51,26 +52,16 @@ observations = spark.table(f"{catalog}.{schema}.silver_observations").select("na
 observations["date"] = pd.to_datetime(observations["date"])
 tables = bi.build_bi_tables(observations, load_registry())
 
-COMMENTS = {
-    "dim_date": "Daily calendar since 1990 (relationships and time slicers).",
-    "dim_series": "One row per series: source, domain, unit, frequency, publication lag.",
-    "fact_observations": "Every observation at its reference date (name, date, value).",
-    "fact_yield_curve": "Daily Government of Canada yields by tenor, overnight to 30 years.",
-    "fact_policy_decisions": "Every policy-rate change since 2001 with easing/tightening cycles.",
-    "fact_policy_calendar": "Scheduled Bank of Canada decision dates (config/boc_calendar.yaml).",
-    "mart_macro_monthly": "Monthly indicators at reference dates: inflation vs target, Taylor rule, oil in CAD, "
-    "tariffs, mortgage renewal shock, spreads.",
-    "mart_energy_passthrough": "Correlation of energy-price inflation with headline/core inflation k months later.",
-    "mart_policy_signals": "Latest hawkish/dovish scorecard: one row per indicator with thresholds and rationale.",
-}
 for name, frame in tables.items():
     cfl_dbx.save_table(
         spark,  # noqa: F821
         frame,
         f"{catalog}.{schema}.bi_{name}",
-        comment=COMMENTS[name],
         date_columns=bi.DATE_COLUMNS.get(name, ()),
     )
+
+# Data dictionary as code: table/column comments + tags from config/bi_dictionary.yaml
+apply_to_unity_catalog(spark, catalog, schema, [f"bi_{name}" for name in tables])  # noqa: F821
 
 # COMMAND ----------
 

@@ -75,6 +75,15 @@ use it to try changes without touching the `prod` tables.
 * **Catalog Explorer → workspace → cfl**: tables with descriptions, column comments, *Lineage* tab
   (Volume → Silver → Gold), *History* tab (one Delta version per daily run).
 * **Jobs & Pipelines → cfl-daily-refresh**: run history, task graph, durations.
+* **Data dictionary**: every `bi_*` table and the two ops tables carry the descriptions of
+  `config/bi_dictionary.yaml` as table / column comments and `layer` / `kind` tags. Query it like any table:
+
+  ```sql
+  SELECT table_name, column_name, data_type, comment
+  FROM workspace.information_schema.columns
+  WHERE table_schema = 'cfl' AND table_name LIKE 'bi_%'
+  ORDER BY table_name, ordinal_position;
+  ```
 * SQL time travel:
 
   ```sql

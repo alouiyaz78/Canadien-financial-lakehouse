@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cfl import bi
+from cfl import bi, catalog_docs
 from cfl.config import Registry
 from tests.conftest import spec
 
@@ -170,3 +170,11 @@ def test_unemployment_trend_is_robust_to_a_spike(registry):
     obs = _obs("unemployment_rate", months, rate)
     macro = bi.mart_macro_monthly(obs, registry).set_index("month")
     assert macro.loc[pd.Timestamp("2020-12-01"), "unemployment_trend_10y"] == pytest.approx(6.0)
+
+
+def test_every_bi_column_is_documented_and_nothing_is_stale(observations, registry):
+    tables = bi.build_bi_tables(observations, registry)
+    for name, frame in tables.items():
+        missing, stale = catalog_docs.undocumented(f"bi_{name}", list(frame.columns))
+        assert not missing, f"bi_{name}: undocumented columns {missing} — add them to config/bi_dictionary.yaml"
+        assert not stale, f"bi_{name}: documented columns no longer produced {stale}"

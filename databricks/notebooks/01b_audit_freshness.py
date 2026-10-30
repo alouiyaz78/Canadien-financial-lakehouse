@@ -35,6 +35,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 from cfl import bronze, silver  # noqa: E402
 from cfl import databricks as cfl_dbx  # noqa: E402
 from cfl.config import load_registry  # noqa: E402
+from cfl.catalog_docs import apply_to_unity_catalog  # noqa: E402
 from cfl.freshness import freshness_report  # noqa: E402
 
 cfl_dbx.configure(catalog, schema, dbutils)  # noqa: F821
@@ -66,6 +67,7 @@ cfl_dbx.save_table(
     comment="Is each series as recent as its publication calendar implies? status = ok | late | missing | retired (discontinued series).",
 )
 display(fresh)  # noqa: F821
+apply_to_unity_catalog(spark, catalog, schema, ["bronze_ingestion_log", "freshness_report"])  # noqa: F821
 
 # COMMAND ----------
 

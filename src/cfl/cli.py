@@ -4,6 +4,7 @@ cfl ingest [--only NAME ...] [--source SOURCE]               download raw data (
 cfl silver                                                    parse + quality report
 cfl gold                                                      monthly model table (ML, real-time aligned)
 cfl bi                                                        Power BI star schema at reference dates
+cfl docs                                                      data dictionary (Markdown) from config/bi_dictionary.yaml
 cfl run [--force]                                             ingest, then silver + gold only if data changed
 cfl freshness                                                 flag series whose latest observation is late
 cfl status                                                    last observation per series
@@ -80,6 +81,13 @@ def _cmd_bi(_: argparse.Namespace) -> int:
     print(f"\nBI marts ({len(tables)} tables) → {out}")
     for name, frame in tables.items():
         print(f"  {name:28s} {len(frame):>7} rows")
+    return 0
+
+
+def _cmd_docs(_: argparse.Namespace) -> int:
+    from cfl.catalog_docs import write_markdown
+
+    print(f"Data dictionary → {write_markdown()}")
     return 0
 
 
@@ -160,6 +168,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("status", _cmd_status, "show last observation per series"),
         ("history", _cmd_history, "list Delta table versions (time travel)"),
         ("freshness", _cmd_freshness, "flag series whose latest observation is late"),
+        ("docs", _cmd_docs, "render docs/bi_data_dictionary.md from config/bi_dictionary.yaml"),
         ("verify-sources", _cmd_verify, "check series ids against source metadata"),
     ]:
         sub.add_parser(name, help=help_text).set_defaults(func=func)

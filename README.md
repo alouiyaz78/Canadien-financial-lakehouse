@@ -103,7 +103,10 @@ ML table which is aligned on publication dates), refreshed by the same daily job
 | Mortgage renewal | What does a household renewing today pay? | Payment-shock simulator (semi-annual compounding, remaining amortization) |
 | Data health | Can the numbers be trusted? | Freshness SLA per series, revisions, ingestion errors |
 
-Model, DAX measures, theme and build guide: [`powerbi/`](powerbi/GUIDE.md).
+Model, DAX measures, theme and build guide: [`powerbi/`](powerbi/GUIDE.md). Every table and column is
+documented once in [`config/bi_dictionary.yaml`](config/bi_dictionary.yaml) (dbt-style): the same file
+writes the Unity Catalog comments and tags, renders [`docs/bi_data_dictionary.md`](docs/bi_data_dictionary.md)
+(`uv run cfl docs`), and fails the tests if a column is left undocumented.
 
 ## Running on Databricks
 
@@ -121,6 +124,7 @@ databricks bundle deploy -t prod && databricks bundle run cfl_daily_refresh -t p
 
 ```
 config/sources.yaml          series registry
+config/bi_dictionary.yaml    data dictionary of the BI / ops tables (→ Unity Catalog comments, docs)
 src/cfl/                     pipeline package (CLI: `cfl`)
   sources/{valet,statcan,fred,census}.py   API clients (fetch raw / parse)
   bronze.py  silver.py  gold.py            medallion layers
@@ -136,6 +140,7 @@ notebooks/
   02_series_metadata_verification.ipynb        coverage and quality checks of the selection
 docs/data_dictionary_selected_series.md        financial meaning of the series
 docs/databricks.md                             Databricks setup and deployment
+docs/bi_data_dictionary.md                     generated data dictionary (uv run cfl docs)
 discovery/                   raw catalog extraction and outputs
 ```
 

@@ -135,3 +135,19 @@ def test_bi_tables_publish_with_date_columns(spark, tmp_lake):  # noqa: F811
             assert dict(sdf.dtypes)[col] == "date", (name, col)
     signals = spark.table("bi_mart_policy_signals")
     assert signals.filter(F.col("latest_value").isNull()).count() == 0
+
+
+def test_dictionary_comments_are_valid_spark_sql(spark):
+    from cfl import catalog_docs
+
+    spark.sql("CREATE DATABASE IF NOT EXISTS cfl_docs")
+    frame = pd.DataFrame(
+        {"lag_months": [0, 1], "corr_headline": [0.5, 0.4], "corr_core": [0.1, 0.2], "n_months": [300, 299]}
+    )
+    spark.createDataFrame(frame).write.mode("overwrite").saveAsTable("cfl_docs.bi_mart_energy_passthrough")
+    # catalog "spark_catalog" = the local session catalog; SET TAGS is Databricks-only and is skipped with a warning.
+    catalog_docs.apply_to_unity_catalog(spark, "spark_catalog", "cfl_docs", ["bi_mart_energy_passthrough"])
+    described = {
+        r["col_name"]: r["comment"] for r in spark.sql("DESCRIBE TABLE cfl_docs.bi_mart_energy_passthrough").collect()
+    }
+    assert described["corr_core"].startswith("Correlation with core inflation")
