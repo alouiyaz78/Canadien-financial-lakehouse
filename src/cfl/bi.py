@@ -142,7 +142,7 @@ def fact_policy_decisions(observations: pd.DataFrame) -> pd.DataFrame:
     )
     out.insert(1, "announcement_date", out["date"] - pd.offsets.BDay(1))
     out["direction"] = np.where(out["change_bp"] > 0, "Hike", "Cut")
-    out["days_since_previous_move"] = out["date"].diff().dt.days
+    out["days_since_previous_move"] = out["date"].diff().dt.days.astype("Int64")  # first move: no previous
     new_cycle = out["direction"] != out["direction"].shift()
     out["cycle_id"] = new_cycle.cumsum().astype(int)
     cycle_start = out.groupby("cycle_id")["announcement_date"].transform("min")

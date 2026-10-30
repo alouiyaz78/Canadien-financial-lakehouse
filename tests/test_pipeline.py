@@ -168,3 +168,18 @@ def test_changed_payload_writes_new_snapshot(lake, registry, fake_payloads):
     results = {r.name: r for r in bronze.ingest(registry.series, run_id="run-3")}
     assert results["cpi_trim"].changed and not results["policy_rate"].changed
     assert len(list((lake["root"] / "bronze" / "valet" / "cpi_trim").glob("*.json"))) == 2
+
+
+def test_ingestion_pauses_between_requests(registry, fake_payloads, tmp_lake, monkeypatch):
+    from cfl.sources import statcan, valet
+
+    def fake_fetch(s, session):
+        return RawPayload(content=fake_payloads[s.name], url="fake://", extension="json")
+
+    monkeypatch.setattr(valet, "fetch", fake_fetch)
+    monkeypatch.setattr(statcan, "fetch", fake_fetch)
+    sleeps = []
+    monkeypatch.setattr(bronze.time, "sleep", sleeps.append)
+    monkeypatch.setenv("CFL_REQUEST_DELAY", "0.3")
+    bronze.ingest(registry.series)
+    assert sleeps == [0.3] * (len(registry.series) - 1)  # between calls, not after the last one

@@ -47,3 +47,9 @@ def tmp_lake(tmp_path, monkeypatch):
 
 def monthly_dates(start: str, periods: int) -> list[str]:
     return [d.strftime("%Y-%m-%d") for d in pd.date_range(start, periods=periods, freq="MS")]
+
+
+@pytest.fixture(autouse=True)
+def no_request_delay(monkeypatch):
+    """Tests never sleep between (fake) API calls."""
+    monkeypatch.setenv("CFL_REQUEST_DELAY", "0")

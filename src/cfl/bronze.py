@@ -18,6 +18,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -42,6 +44,15 @@ class IngestResult:
     @property
     def changed(self) -> bool:
         return bool(self.record.get("changed"))
+
+
+def request_delay_seconds() -> float:
+    """Pause between two API calls of a run, to stay well under the sources' rate limits.
+
+    StatCan WDS and the Census API throttle bursts; 0.3 s keeps a 38-series run polite at a cost of
+    ~10 s. Override with CFL_REQUEST_DELAY (tests set it to 0).
+    """
+    return float(os.environ.get("CFL_REQUEST_DELAY", "0.3"))
 
 
 def bronze_dir() -> Path:
@@ -94,7 +105,12 @@ def ingest(specs: list[SeriesSpec], run_id: str | None = None, tag: str = "") ->
     """Ingest ``specs``; one manifest file per call (``tag`` distinguishes parallel tasks, e.g. a source)."""
     session = make_session()
     started = datetime.now(UTC)
-    results = [ingest_series(spec, session, run_id) for spec in specs]
+    delay = request_delay_seconds()
+    results = []
+    for i, spec in enumerate(specs):
+        if i and delay:
+            time.sleep(delay)
+        results.append(ingest_series(spec, session, run_id))
     suffix = f"_{tag}" if tag else ""
     manifest = bronze_dir() / "_manifest" / f"run_{started:%Y%m%dT%H%M%S%fZ}{suffix}.jsonl"
     manifest.parent.mkdir(parents=True, exist_ok=True)
