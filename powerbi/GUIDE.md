@@ -54,7 +54,7 @@ Power BI → **Get data → Parquet** → dossier
 | `bi_dim_date[date]` | `bi_mart_macro_monthly[month]` |
 | `bi_dim_date[date]` | `bi_fact_yield_curve[date]` |
 | `bi_dim_date[date]` | `bi_fact_observations[date]` |
-| `bi_dim_date[date]` | `bi_fact_policy_decisions[date]` |
+| `bi_dim_date[date]` | `bi_fact_policy_decisions[announcement_date]` |
 | `bi_dim_series[name]` | `bi_fact_observations[name]` |
 
 Puis :
@@ -104,6 +104,7 @@ Format 16:9, fond beige du thème, un titre qui **affirme** la conclusion (pas �
 - **Grille** : tableau sur `bi_mart_policy_signals` (indicator, latest_value, unit, signal_label),
   arrière-plan conditionnel de `signal_label` = `[Signal Color]`, info-bulle = `rationale`.
 - **Décisions** : ajoute `bi_fact_policy_decisions` en points sur la courbe du taux (marqueurs).
+  `announcement_date` = jour de l'annonce ; `date` = entrée en vigueur (jour ouvrable suivant).
 
 ### Page 2 — Choc pétrolier et inflation
 

@@ -121,7 +121,12 @@ def fact_yield_curve(observations: pd.DataFrame) -> pd.DataFrame:
 
 
 def fact_policy_decisions(observations: pd.DataFrame) -> pd.DataFrame:
-    """Every change of the target overnight rate, with easing / tightening cycles."""
+    """Every change of the target overnight rate, with easing / tightening cycles.
+
+    Valet's target-rate series (CBC20210 / V39079) records the **effective** date of a new rate, the
+    business day after the announcement (Wednesday announcement → Thursday). ``announcement_date``
+    is that previous business day, the date people refer to ("the 28 October hike").
+    """
     rate = _daily(observations, "policy_rate").dropna()
     change = rate.diff()
     moves = change[change.abs() >= 0.01]
@@ -135,11 +140,13 @@ def fact_policy_decisions(observations: pd.DataFrame) -> pd.DataFrame:
             "change_bp": (moves.to_numpy() * 100).round().astype(int),
         }
     )
+    out.insert(1, "announcement_date", out["date"] - pd.offsets.BDay(1))
     out["direction"] = np.where(out["change_bp"] > 0, "Hike", "Cut")
     out["days_since_previous_move"] = out["date"].diff().dt.days
     new_cycle = out["direction"] != out["direction"].shift()
     out["cycle_id"] = new_cycle.cumsum().astype(int)
-    out["cycle"] = out.groupby("cycle_id")["date"].transform("min").dt.strftime("%Y-%m") + " " + out["direction"]
+    cycle_start = out.groupby("cycle_id")["announcement_date"].transform("min")
+    out["cycle"] = cycle_start.dt.strftime("%Y-%m") + " " + out["direction"]
     out["cumulative_cycle_bp"] = out.groupby("cycle_id")["change_bp"].cumsum()
     return out
 
@@ -399,7 +406,7 @@ DATE_COLUMNS = {
     "dim_date": ["date", "month_start"],
     "fact_observations": ["date"],
     "fact_yield_curve": ["date"],
-    "fact_policy_decisions": ["date"],
+    "fact_policy_decisions": ["date", "announcement_date"],
     "fact_policy_calendar": ["date"],
     "mart_macro_monthly": ["month"],
     "mart_policy_signals": ["reference_month"],

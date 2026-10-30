@@ -32,8 +32,9 @@ RETURN
     )
 
 Last Decision =
-VAR LastMove = CALCULATE ( MAX ( bi_fact_policy_decisions[date] ), REMOVEFILTERS ( bi_dim_date ) )
-VAR Bp = CALCULATE ( MAX ( bi_fact_policy_decisions[change_bp] ), bi_fact_policy_decisions[date] = LastMove, REMOVEFILTERS ( bi_dim_date ) )
+// [date] is the effective date (day after); show the announcement date
+VAR LastMove = CALCULATE ( MAX ( bi_fact_policy_decisions[announcement_date] ), REMOVEFILTERS ( bi_dim_date ) )
+VAR Bp = CALCULATE ( MAX ( bi_fact_policy_decisions[change_bp] ), bi_fact_policy_decisions[announcement_date] = LastMove, REMOVEFILTERS ( bi_dim_date ) )
 RETURN
     IF ( Bp > 0, "+", "" ) & Bp & " bp on " & FORMAT ( LastMove, "d mmm yyyy" )
 

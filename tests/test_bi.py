@@ -120,6 +120,10 @@ def test_policy_decisions_and_cycles(observations):
     assert decisions["change_bp"].tolist() == [25, 25, -25, 25]
     assert decisions["cycle_id"].tolist() == [1, 1, 2, 3]
     assert decisions["cumulative_cycle_bp"].tolist() == [25, 50, -25, 25]
+    # Effective dates are the business day after the announcement (Wed → Thu, Fri → Mon).
+    effective_to_announced = dict(zip(decisions["date"], decisions["announcement_date"], strict=True))
+    assert effective_to_announced[pd.Timestamp("2026-10-28")] == pd.Timestamp("2026-10-27")
+    assert effective_to_announced[pd.Timestamp("2010-06-01")] == pd.Timestamp("2010-05-31")
 
 
 def test_yield_curve_long_format(observations):
