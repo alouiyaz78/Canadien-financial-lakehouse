@@ -90,6 +90,21 @@ Outputs:
 | `data/gold/model_table_monthly/` (Delta, + `.csv`) | one row per month since 1990: raw features, derived features, targets |
 | `data/gold/column_dictionary.csv` | role and meaning of every column |
 
+## Power BI report
+
+Four analytical pages built on a star schema of Gold **BI marts** (at reference dates, unlike the
+ML table which is aligned on publication dates), refreshed by the same daily job:
+
+| Page | Question answered | Beyond a standard dashboard |
+|---|---|---|
+| Policy monitor | Will the Bank hike, hold or cut? | Taylor rule with what-if parameters, market-implied path, hawkish/dovish scorecard |
+| Oil shock | Is the 2026 energy shock spreading to core prices? | Oil priced in CAD, FX effect, measured energy → core pass-through lag |
+| Tariffs | What does Canada actually pay, and who absorbs it? | Effective (paid) tariff vs Mexico/China, exporter price absorption |
+| Mortgage renewal | What does a household renewing today pay? | Payment-shock simulator (semi-annual compounding, remaining amortization) |
+| Data health | Can the numbers be trusted? | Freshness SLA per series, revisions, ingestion errors |
+
+Model, DAX measures, theme and build guide: [`powerbi/`](powerbi/GUIDE.md).
+
 ## Running on Databricks
 
 The same pipeline is deployed to Databricks with a **Databricks Asset Bundle**
@@ -110,9 +125,11 @@ src/cfl/                     pipeline package (CLI: `cfl`)
   sources/{valet,statcan,fred,census}.py   API clients (fetch raw / parse)
   bronze.py  silver.py  gold.py            medallion layers
   storage.py                               Delta tables (delta-rs)
+  bi.py                                    Power BI star schema (marts at reference dates)
   cli.py  databricks.py                    CLI; Unity Catalog publishing helpers
 databricks/notebooks/        Databricks job tasks (01 Bronze, 01b audit, 02 Silver, 03 Gold) + examples/
 databricks.yml               Databricks Asset Bundle (schema, volume, daily job)
+powerbi/                     DAX measures, theme, report build guide
 tests/                       offline tests on recorded-format payloads
 notebooks/
   01_data_discovery_series_exploration.ipynb   catalog exploration (15,906 Valet series → selection)
@@ -127,6 +144,7 @@ discovery/                   raw catalog extraction and outputs
 - [x] Phase 1 — Data discovery: catalog exploration, series selection, quality checks
 - [x] Phase 2 — Pipeline: multi-source ingestion, Bronze/Silver/Gold, real-time alignment, tests
 - [x] Phase 2b — Databricks: Asset Bundle, Unity Catalog tables, daily serverless Job
+- [x] Phase 2c — BI marts + Power BI model and measures (report pages: in progress)
 - [ ] Phase 3 — Baselines: random walk, AR(p), Bank-target (2 %) benchmark; rolling-origin backtest
 - [ ] Phase 4 — Models: penalised regression, gradient boosting; ordinal / multinomial model for problem B
 - [ ] Phase 5 — Interpretation: SHAP, error analysis on 2008, 2020–22 and the 2026 energy shock

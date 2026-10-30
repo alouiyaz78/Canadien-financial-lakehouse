@@ -1,6 +1,6 @@
 # Databricks Asset Bundle — deploys the whole lakehouse to a Databricks workspace:
 #   * Unity Catalog schema + managed Volume (raw Bronze files)
-#   * a daily serverless Job: 4 parallel ingestions → audit/freshness → change gate → Silver (MERGE) → Gold
+#   * a daily serverless Job: 4 parallel ingestions → audit/freshness → change gate → Silver (MERGE) → Gold (ML + BI)
 #
 #   databricks bundle validate
 #   databricks bundle deploy -t prod
@@ -106,7 +106,7 @@ resources:
             left: "{{tasks.audit_freshness.values.any_changed}}"
             right: "true"
 
-        # 4. Silver (incremental MERGE) and Gold.
+        # 4. Silver (incremental MERGE), then the two Gold branches in parallel: ML table and Power BI marts.
         - task_key: silver_transform
           depends_on:
             - task_key: any_changes
@@ -118,6 +118,11 @@ resources:
             - task_key: silver_transform
           notebook_task:
             notebook_path: ./databricks/notebooks/03_gold_model_table.py
+        - task_key: gold_bi_marts
+          depends_on:
+            - task_key: silver_transform
+          notebook_task:
+            notebook_path: ./databricks/notebooks/04_gold_bi_marts.py
 
 targets:
   # Personal sandbox: resources are prefixed with your user name and schedules are paused.

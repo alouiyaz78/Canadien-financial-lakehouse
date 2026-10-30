@@ -1,0 +1,42 @@
+{
+  "name": "Canadian Financial Lakehouse",
+  "dataColors": [
+    "#1F3A5F",
+    "#C0392B",
+    "#2E86AB",
+    "#E0A458",
+    "#1F7A4D",
+    "#7D5BA6",
+    "#9AA5B1",
+    "#4C6A92"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1F2A37",
+  "tableAccent": "#1F3A5F",
+  "good": "#1F7A4D",
+  "neutral": "#9AA5B1",
+  "bad": "#C0392B",
+  "maximum": "#C0392B",
+  "center": "#F4F1EA",
+  "minimum": "#1F7A4D",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1F2A37" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1F2A37" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#4B5563" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#1F3A5F" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [{ "show": false }],
+        "dropShadow": [{ "show": false }],
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F4F1EA" } }, "transparency": 0 }]
+      }
+    }
+  }
+}

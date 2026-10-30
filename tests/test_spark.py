@@ -118,3 +118,20 @@ def test_publish_gold_and_quality_report_as_tables(spark, lake, registry):  # no
     assert nan_count == 0 and null_count == int(flat["y_cpi_trim_h12"].isna().sum()) > 0
     assert dict(gold_sdf.dtypes)["is_partial_month"] == "boolean"
     assert spark.table("silver_quality_report").count() == len(lake["report"])
+
+
+def test_bi_tables_publish_with_date_columns(spark, tmp_lake):  # noqa: F811
+    from cfl import bi
+    from tests.test_bi import observations as obs_fixture  # noqa: F401
+    from tests.test_bi import registry as bi_registry  # noqa: F401
+
+    reg = bi_registry.__wrapped__()
+    tables = bi.build_bi_tables(obs_fixture.__wrapped__(), reg)
+    for name, frame in tables.items():
+        cfl_dbx.save_table(spark, frame, f"bi_{name}", date_columns=bi.DATE_COLUMNS.get(name, ()))
+        sdf = spark.table(f"bi_{name}")
+        assert sdf.count() == len(frame), name
+        for col in bi.DATE_COLUMNS.get(name, ()):
+            assert dict(sdf.dtypes)[col] == "date", (name, col)
+    signals = spark.table("bi_mart_policy_signals")
+    assert signals.filter(F.col("latest_value").isNull()).count() == 0

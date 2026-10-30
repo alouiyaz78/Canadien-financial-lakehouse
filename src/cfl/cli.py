@@ -2,7 +2,8 @@
 
 cfl ingest [--only NAME ...] [--source SOURCE]               download raw data (Bronze)
 cfl silver                                                    parse + quality report
-cfl gold                                                      monthly model table
+cfl gold                                                      monthly model table (ML, real-time aligned)
+cfl bi                                                        Power BI star schema at reference dates
 cfl run [--force]                                             ingest, then silver + gold only if data changed
 cfl freshness                                                 flag series whose latest observation is late
 cfl status                                                    last observation per series
@@ -67,7 +68,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
         return code
     _cmd_silver(args)
     _cmd_gold(args)
+    _cmd_bi(args)
     return code
+
+
+def _cmd_bi(_: argparse.Namespace) -> int:
+    from cfl import bi
+
+    tables = bi.build_bi_tables(silver.read_silver(), load_registry())
+    out = bi.write_local(tables)
+    print(f"\nBI marts ({len(tables)} tables) → {out}")
+    for name, frame in tables.items():
+        print(f"  {name:28s} {len(frame):>7} rows")
+    return 0
 
 
 def _cmd_freshness(_: argparse.Namespace) -> int:
@@ -143,6 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name, func, help_text in [
         ("silver", _cmd_silver, "parse Bronze into the Silver table"),
         ("gold", _cmd_gold, "build the monthly model table"),
+        ("bi", _cmd_bi, "build the Power BI star schema (data/gold/bi/)"),
         ("status", _cmd_status, "show last observation per series"),
         ("history", _cmd_history, "list Delta table versions (time travel)"),
         ("freshness", _cmd_freshness, "flag series whose latest observation is late"),

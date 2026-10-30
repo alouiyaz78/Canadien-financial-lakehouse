@@ -10,6 +10,7 @@ The same pipeline runs on Databricks (Free Edition is enough), deployed as code 
 | Freshness | `uv run cfl freshness` | table `freshness_report` (`ok` / `late` / `missing` per series) |
 | Silver | Delta table `data/silver/observations` | `silver_observations` (incremental **MERGE** on name+date), `silver_quality_report` |
 | Gold | Delta table `data/gold/model_table_monthly` | tables `gold_model_table_monthly` (column comments), `gold_column_dictionary` |
+| BI (Power BI) | `uv run cfl bi` → `data/gold/bi/` | `bi_dim_*`, `bi_fact_*`, `bi_mart_*` tables (see [`powerbi/GUIDE.md`](../powerbi/GUIDE.md)) |
 | Orchestration | `uv run cfl run` (skips Silver/Gold if nothing changed) | Job `cfl-daily-refresh` (serverless, daily 07:43 Toronto) |
 
 ## Job design: poll daily, work only when something changed
@@ -19,9 +20,9 @@ time), so the job **polls every morning** and is cheap when nothing is new:
 
 ```
 ingest_valet ───┐
-ingest_statcan ─┤                                 ┌─ true ─► silver_transform ─► gold_model_table
-ingest_fred ────┼─► audit_freshness ─► any_changes┤
-ingest_census ──┘   (run_if ALL_DONE)             └─ false ─► (stop)
+ingest_statcan ─┤                                  ┌─ true ─► silver_transform ─┬─► gold_model_table (ML)
+ingest_fred ────┼─► audit_freshness ─► any_changes ┤                            └─► gold_bi_marts (Power BI)
+ingest_census ──┘   (run_if ALL_DONE)              └─ false ─► (stop)
 ```
 
 * **Idempotent Bronze** — a raw snapshot is written only if its SHA-256 differs from the latest one.
