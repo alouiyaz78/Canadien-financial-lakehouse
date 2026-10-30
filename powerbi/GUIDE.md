@@ -5,7 +5,7 @@ banque ou d'un fonds se pose réellement, plus une page de santé du pipeline.
 
 | Page | Question | Ce qui la rend différente |
 |---|---|---|
-| 1. Moniteur de décision | La Banque va-t-elle monter, maintenir ou baisser ? | Règle de Taylor **paramétrable**, ce que le marché anticipe, grille de signaux |
+| 1. Moniteur de décision | La Banque va-t-elle monter, maintenir ou baisser ? | Règle de Taylor **paramétrable** (tendance du chômage = médiane 10 ans, robuste au pic de 2020), ce que le marché anticipe, grille de signaux |
 | 2. Choc pétrolier | Le choc de 2026 se propage-t-il au reste des prix ? | Pétrole **en dollars canadiens**, effet de change, **délai de transmission** mesuré |
 | 3. Tarifs | Combien le Canada paie-t-il vraiment, et qui absorbe ? | Tarif **effectivement payé** vs concurrents, absorption par les exportateurs |
 | 4. Renouvellement hypothécaire | Que paie un ménage qui renouvelle aujourd'hui ? | **Simulateur** de choc de paiement (paramètres what-if) |

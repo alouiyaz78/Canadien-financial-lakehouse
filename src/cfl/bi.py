@@ -195,7 +195,9 @@ def mart_macro_monthly(observations: pd.DataFrame, registry: Registry) -> pd.Dat
 
     # Labour and activity
     m["unemployment_rate"] = _col(p, "unemployment_rate")
-    m["unemployment_trend_10y"] = m["unemployment_rate"].rolling(120, min_periods=60).mean()
+    # Trend = 10-year rolling MEDIAN, not mean: the 2020 spike (14.2%) pulled the 10-year mean up by
+    # ~0.3 pt (6.57% vs 6.30% median in Sep 2026), which made today's 6.5% look like a tight market.
+    m["unemployment_trend_10y"] = m["unemployment_rate"].rolling(120, min_periods=60).median()
     m["unemployment_gap"] = m["unemployment_rate"] - m["unemployment_trend_10y"]
     m["employment_yoy"] = _yoy(_col(p, "employment"))
     m["gdp_yoy"] = _yoy(_col(p, "gdp_monthly"))
@@ -315,7 +317,7 @@ SIGNAL_RULES = [
         "Wages above ~3.5% are hard to reconcile with 2% inflation.",
     ),
     SignalRule(
-        "Unemployment gap vs 10-year trend",
+        "Unemployment gap vs 10-year median",
         "unemployment_gap",
         "pts",
         -0.3,

@@ -161,3 +161,12 @@ def test_build_and_write_all_tables(observations, registry, tmp_lake):
     assert (out / "mart_macro_monthly.parquet").exists() and (out / "dim_date.csv").exists()
     calendar = tables["fact_policy_calendar"]
     assert pd.Timestamp("2026-12-09") in set(calendar["date"])
+
+
+def test_unemployment_trend_is_robust_to_a_spike(registry):
+    months = pd.date_range("2010-01-01", "2020-12-01", freq="MS")
+    rate = np.full(len(months), 6.0)
+    rate[-9:-3] = 14.0  # a short pandemic-like spike
+    obs = _obs("unemployment_rate", months, rate)
+    macro = bi.mart_macro_monthly(obs, registry).set_index("month")
+    assert macro.loc[pd.Timestamp("2020-12-01"), "unemployment_trend_10y"] == pytest.approx(6.0)
