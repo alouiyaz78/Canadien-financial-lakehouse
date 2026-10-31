@@ -97,7 +97,7 @@ Dovish Signals = CALCULATE ( COUNTROWS ( bi_mart_policy_signals ), bi_mart_polic
 
 // Conditional formatting for the scorecard table (Format → Cell elements → Background → Field value)
 Signal Color =
-SWITCH ( MAX ( bi_mart_policy_signals[signal] ), 1, "#C0392B", -1, "#1F7A4D", "#9AA5B1" )
+SWITCH ( MAX ( bi_mart_policy_signals[signal] ), 1, "#C8102E", -1, "#2F5D50", "#8E9AAF" )
 
 
 // ---------------------------------------------------------------- Inflation

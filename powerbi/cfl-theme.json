@@ -1,41 +1,56 @@
 {
-  "name": "Canadian Financial Lakehouse",
+  "name": "Canadian Winter",
   "dataColors": [
-    "#1F3A5F",
-    "#C0392B",
-    "#2E86AB",
-    "#E0A458",
-    "#1F7A4D",
-    "#7D5BA6",
-    "#9AA5B1",
-    "#4C6A92"
+    "#0B2545",
+    "#C8102E",
+    "#4A90C2",
+    "#2F5D50",
+    "#3FB8AF",
+    "#C9A227",
+    "#8E9AAF",
+    "#5C6B7A"
   ],
   "background": "#FFFFFF",
-  "foreground": "#1F2A37",
-  "tableAccent": "#1F3A5F",
-  "good": "#1F7A4D",
-  "neutral": "#9AA5B1",
-  "bad": "#C0392B",
-  "maximum": "#C0392B",
-  "center": "#F4F1EA",
-  "minimum": "#1F7A4D",
+  "foreground": "#0B2545",
+  "tableAccent": "#0B2545",
+  "good": "#2F5D50",
+  "neutral": "#8E9AAF",
+  "bad": "#C8102E",
+  "maximum": "#C8102E",
+  "center": "#EEF3F8",
+  "minimum": "#2F5D50",
   "textClasses": {
-    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1F2A37" },
-    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1F2A37" },
-    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#4B5563" },
-    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#1F3A5F" }
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#0B2545" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#0B2545" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#5C6B7A" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#0B2545" }
   },
   "visualStyles": {
     "*": {
       "*": {
-        "border": [{ "show": false }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#DCE4EC" } }, "radius": 10 }],
         "dropShadow": [{ "show": false }],
-        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }]
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }],
+        "title": [{ "fontColor": { "solid": { "color": "#0B2545" } } }]
       }
     },
     "page": {
       "*": {
-        "background": [{ "color": { "solid": { "color": "#F4F1EA" } }, "transparency": 0 }]
+        "background": [{ "color": { "solid": { "color": "#EEF3F8" } }, "transparency": 0 }],
+        "outspace": [{ "color": { "solid": { "color": "#DCE4EC" } } }]
+      }
+    },
+    "textbox": {
+      "*": {
+        "border": [{ "show": false }],
+        "background": [{ "show": false }]
+      }
+    },
+    "lineChart": {
+      "*": {
+        "lineStyles": [{ "strokeWidth": 2.5 }],
+        "categoryAxis": [{ "gridlineShow": false }],
+        "valueAxis": [{ "gridlineColor": { "solid": { "color": "#E3E9EF" } } }]
       }
     }
   }

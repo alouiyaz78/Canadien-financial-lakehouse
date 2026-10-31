@@ -24,7 +24,7 @@ banque ou d'un fonds se pose réellement, plus une page de santé du pipeline.
 1. Databricks → **SQL Warehouses** → ton entrepôt (Serverless Starter Warehouse) → **Connection details** :
    note `Server hostname` et `HTTP path`.
 2. Databricks → avatar → **Settings → Developer → Access tokens → Generate new token** (90 jours).
-3. Power BI Desktop → **Get data → Azure Databricks** (fonctionne aussi pour un espace AWS) →
+3. Power BI Desktop → **Obtenir les données → Databricks** (pas « Azure Databricks ») →
    colle hostname et HTTP path → mode **Import** → authentification *Personal Access Token*.
 4. Coche dans `workspace.cfl` :
    `bi_dim_date`, `bi_dim_series`, `bi_fact_observations`, `bi_fact_yield_curve`,
@@ -74,7 +74,7 @@ Puis :
 
 ## 3. Les pages
 
-Format 16:9, fond beige du thème, un titre qui **affirme** la conclusion (pas « Inflation » mais
+Format 16:9, fond « neige » du thème Canadian Winter, un titre qui **affirme** la conclusion (pas « Inflation » mais
 « L'inflation fondamentale est sous la cible malgré le choc pétrolier »).
 
 ### Page 1 — Moniteur de décision
