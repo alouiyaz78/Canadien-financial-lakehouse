@@ -1,0 +1,373 @@
+createOrReplace
+
+	ref table _Measures
+
+		measure 'Policy Rate (latest)' =
+				VAR LastDay =
+				    CALCULATE (
+				        MAX ( bi_fact_yield_curve[date] ),
+				        bi_fact_yield_curve[tenor] = "Overnight",
+				        REMOVEFILTERS ( bi_dim_date )
+				    )
+				RETURN
+				    CALCULATE (
+				        MAX ( bi_fact_yield_curve[yield_pct] ),
+				        bi_fact_yield_curve[tenor] = "Overnight",
+				        bi_fact_yield_curve[date] = LastDay,
+				        REMOVEFILTERS ( bi_dim_date )
+				    )
+			formatString: 0.00
+			displayFolder: Policy
+
+		measure 'Last Decision' =
+				// [date] is the effective date (day after); show the announcement date
+				VAR LastMove = CALCULATE ( MAX ( bi_fact_policy_decisions[announcement_date] ), REMOVEFILTERS ( bi_dim_date ) )
+				VAR Bp = CALCULATE ( MAX ( bi_fact_policy_decisions[change_bp] ), bi_fact_policy_decisions[announcement_date] = LastMove, REMOVEFILTERS ( bi_dim_date ) )
+				RETURN
+				    IF ( Bp > 0, "+", "" ) & Bp & " bp on " & FORMAT ( LastMove, "d mmm yyyy" )
+			displayFolder: Policy
+
+		measure 'Next Decision Date' =
+				CALCULATE (
+				    MIN ( bi_fact_policy_calendar[date] ),
+				    bi_fact_policy_calendar[date] >= TODAY (),
+				    REMOVEFILTERS ( bi_dim_date )
+				)
+			displayFolder: Policy
+
+		measure 'Days to Next Decision' = DATEDIFF ( TODAY (), [Next Decision Date], DAY )
+			formatString: 0
+			displayFolder: Policy
+
+		measure 'Policy Rate' = AVERAGE ( bi_mart_macro_monthly[policy_rate] )
+			formatString: 0.00
+			displayFolder: Policy
+
+		measure 'Real Policy Rate' = AVERAGE ( bi_mart_macro_monthly[real_policy_rate] )
+			formatString: 0.00
+			displayFolder: Policy
+
+		measure 'Market-Implied Move 6M (bp)' = AVERAGE ( bi_mart_macro_monthly[market_implied_6m_bp] )
+			formatString: 0
+			displayFolder: Policy
+
+		measure 'Market Pricing Label' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[market_implied_6m_bp] ) )
+				VAR Bp = CALCULATE ( [Market-Implied Move 6M (bp)], bi_mart_macro_monthly[month] = M )
+				RETURN
+				    SWITCH ( TRUE (), Bp >= 15, "Markets price hikes", Bp <= -15, "Markets price cuts", "Markets price a hold" )
+			displayFolder: Policy
+
+		/// Taylor rule with the what-if parameters (the Gold column taylor_rule_rate uses the defaults)
+		measure 'Taylor Rule Rate' =
+				AVERAGEX (
+				    bi_mart_macro_monthly,
+				    [Neutral real rate Value]
+				        + bi_mart_macro_monthly[core_avg]
+				        + [Inflation weight Value] * ( bi_mart_macro_monthly[core_avg] - 2 )
+				        - [Slack weight Value] * 2 * bi_mart_macro_monthly[unemployment_gap]
+				)
+			formatString: 0.00
+			displayFolder: Policy
+
+		measure 'Taylor Gap' = [Policy Rate] - [Taylor Rule Rate]
+			formatString: 0.00
+			displayFolder: Policy
+
+		measure 'Taylor Reading' =
+				// Latest month with core inflation published (the current month is still empty)
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[taylor_rule_rate] ) )
+				VAR Gap = CALCULATE ( [Taylor Gap], bi_mart_macro_monthly[month] = M )
+				RETURN
+				    SWITCH (
+				        TRUE (),
+				        ISBLANK ( Gap ), BLANK (),
+				        Gap < -0.5, "Policy looser than the rule → argues for hikes",
+				        Gap > 0.5, "Policy tighter than the rule → argues for cuts",
+				        "Policy close to the rule"
+				    )
+			displayFolder: Policy
+
+		measure 'Net Policy Stance' = SUM ( bi_mart_policy_signals[signal] )
+			formatString: 0
+			displayFolder: Policy
+
+		measure 'Net Policy Stance Label' =
+				VAR S = [Net Policy Stance]
+				RETURN
+				    SWITCH ( TRUE (), S >= 2, "Hawkish bias", S <= -2, "Dovish bias", "Balanced" )
+			displayFolder: Policy
+
+		measure 'Hawkish Signals' = CALCULATE ( COUNTROWS ( bi_mart_policy_signals ), bi_mart_policy_signals[signal] = 1 )
+			formatString: 0
+			displayFolder: Policy
+
+		measure 'Dovish Signals' = CALCULATE ( COUNTROWS ( bi_mart_policy_signals ), bi_mart_policy_signals[signal] = -1 )
+			formatString: 0
+			displayFolder: Policy
+
+		/// Conditional formatting for the scorecard table (Format → Cell elements → Background → Field value)
+		measure 'Signal Color' = SWITCH ( MAX ( bi_mart_policy_signals[signal] ), 1, "#C0392B", -1, "#1F7A4D", "#9AA5B1" )
+			displayFolder: Policy
+
+		measure 'Headline CPI (y/y)' = AVERAGE ( bi_mart_macro_monthly[cpi_headline_yoy] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'CPI-trim' = AVERAGE ( bi_mart_macro_monthly[cpi_trim] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'CPI-median' = AVERAGE ( bi_mart_macro_monthly[cpi_median] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'CPI-common' = AVERAGE ( bi_mart_macro_monthly[cpi_common] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Core Inflation (avg)' = AVERAGE ( bi_mart_macro_monthly[core_avg] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Core Measures Spread' = AVERAGE ( bi_mart_macro_monthly[core_range] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Target' = 2
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Target Band Low' = 1
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Target Band High' = 3
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Core vs Target (pts)' = [Core Inflation (avg)] - [Target]
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Months Outside Target Band' =
+				COUNTROWS (
+				    FILTER (
+				        bi_mart_macro_monthly,
+				        bi_mart_macro_monthly[cpi_headline_yoy] > 3 || bi_mart_macro_monthly[cpi_headline_yoy] < 1
+				    )
+				)
+			formatString: 0
+			displayFolder: Inflation
+
+		/// Latest-month KPIs (ignore the date slicer)
+		measure 'Latest Core Inflation' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[core_avg] ), REMOVEFILTERS ( bi_dim_date ) )
+				RETURN CALCULATE ( [Core Inflation (avg)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Latest Headline CPI' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[cpi_headline_yoy] ), REMOVEFILTERS ( bi_dim_date ) )
+				RETURN CALCULATE ( [Headline CPI (y/y)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'Inflation Expectations 2-3Y' = AVERAGE ( bi_mart_macro_monthly[infl_exp_consensus_2_3y] )
+			formatString: 0.00
+			displayFolder: Inflation
+
+		measure 'WTI (USD)' = AVERAGE ( bi_mart_macro_monthly[wti_usd] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'WTI (CAD)' = AVERAGE ( bi_mart_macro_monthly[wti_cad] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'WTI CAD (y/y %)' = AVERAGE ( bi_mart_macro_monthly[wti_cad_yoy] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'WTI USD (y/y %)' = AVERAGE ( bi_mart_macro_monthly[wti_usd_yoy] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		/// How much of the oil move the exchange rate amplified (+) or cushioned (−) for Canadians
+		measure 'FX Effect on Oil (pts)' = [WTI CAD (y/y %)] - [WTI USD (y/y %)]
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'Energy Commodity Prices (y/y %)' = AVERAGE ( bi_mart_macro_monthly[bcpi_energy_yoy] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'Headline minus Core (pts)' = AVERAGE ( bi_mart_macro_monthly[headline_minus_core] )
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'Peak Lag to Core (months)' =
+				MAXX (
+				    TOPN ( 1, bi_mart_energy_passthrough, bi_mart_energy_passthrough[corr_core], DESC ),
+				    bi_mart_energy_passthrough[lag_months]
+				)
+			formatString: 0
+			displayFolder: Energy
+
+		measure 'Peak Correlation to Core' =
+				MAXX (
+				    TOPN ( 1, bi_mart_energy_passthrough, bi_mart_energy_passthrough[corr_core], DESC ),
+				    bi_mart_energy_passthrough[corr_core]
+				)
+			formatString: 0.00
+			displayFolder: Energy
+
+		measure 'Pass-through Reading' =
+				"Energy prices lead core inflation by about " & [Peak Lag to Core (months)]
+				    & " months (correlation " & FORMAT ( [Peak Correlation to Core], "0.00" ) & ")"
+			displayFolder: Energy
+
+		measure 'US Tariff on Canada (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'US Tariff on Mexico (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'US Tariff on China (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_china] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'Canada Advantage vs China (pts)' = AVERAGE ( bi_mart_macro_monthly[canada_tariff_advantage_vs_china] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'US Import Prices from Canada (y/y %)' = AVERAGE ( bi_mart_macro_monthly[us_import_prices_from_canada_yoy] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'Trade Policy Uncertainty' = AVERAGE ( bi_mart_macro_monthly[trade_policy_uncertainty] )
+			displayFolder: Trade
+
+		measure 'USD/CAD' = AVERAGE ( bi_mart_macro_monthly[usdcad] )
+			formatString: 0.00
+			displayFolder: Trade
+
+		measure 'Tariff Change vs Pre-2025 (pts)' =
+				VAR Before =
+				    CALCULATE (
+				        AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] ),
+				        DATESBETWEEN ( bi_dim_date[date], DATE ( 2024, 1, 1 ), DATE ( 2024, 12, 31 ) ),
+				        REMOVEFILTERS ( bi_dim_date )
+				    )
+				RETURN [US Tariff on Canada (%)] - Before
+			formatString: 0.00
+			displayFolder: Trade
+
+		/// Negative = Canadian exporters cut their prices, i.e. absorb part of the tariff
+		measure 'Exporter Absorption Reading' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_import_prices_from_canada_yoy] ) )
+				VAR P = CALCULATE ( [US Import Prices from Canada (y/y %)], bi_mart_macro_monthly[month] = M )
+				RETURN
+				    IF ( P < 0, "Canadian exporters are cutting prices (absorbing tariffs)", "No sign of price absorption by Canadian exporters" )
+			displayFolder: Trade
+
+		measure 'Mortgage 5Y Today (%)' = AVERAGE ( bi_mart_macro_monthly[mortgage_5y] )
+			formatString: 0.00
+			displayFolder: Mortgage
+
+		measure 'Mortgage 5Y at Origination (%)' = AVERAGE ( bi_mart_macro_monthly[mortgage_5y_at_origination] )
+			formatString: 0.00
+			displayFolder: Mortgage
+
+		measure 'Renewal Rate Change (pts)' = AVERAGE ( bi_mart_macro_monthly[renewal_rate_change] )
+			formatString: 0.00
+			displayFolder: Mortgage
+
+		measure 'Bank Mortgage Spread (pts)' = AVERAGE ( bi_mart_macro_monthly[mortgage_spread_5y] )
+			formatString: 0.00
+			displayFolder: Mortgage
+
+		measure 'Payment at Origination' =
+				VAR R = [Mortgage 5Y at Origination (%)] / 100
+				VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+				VAR N = [Amortization years Value] * 12
+				RETURN [Mortgage amount Value] * J / ( 1 - ( 1 + J ) ^ ( -N ) )
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Balance at Renewal' =
+				VAR R = [Mortgage 5Y at Origination (%)] / 100
+				VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+				VAR P = [Payment at Origination]
+				RETURN [Mortgage amount Value] * ( 1 + J ) ^ 60 - P * ( ( 1 + J ) ^ 60 - 1 ) / J
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Payment at Renewal' =
+				VAR R = [Mortgage 5Y Today (%)] / 100
+				VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+				VAR N = [Amortization years Value] * 12 - 60
+				RETURN [Balance at Renewal] * J / ( 1 - ( 1 + J ) ^ ( -N ) )
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Monthly Payment Shock ($)' = [Payment at Renewal] - [Payment at Origination]
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Monthly Payment Shock (%)' = DIVIDE ( [Payment at Renewal], [Payment at Origination] ) - 1
+			formatString: 0.0%
+			displayFolder: Mortgage
+
+		measure 'Annual Payment Shock ($)' = [Monthly Payment Shock ($)] * 12
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Yield on Selected Date' =
+				VAR D = MAX ( bi_dim_date[date] )
+				VAR LastD = CALCULATE ( MAX ( bi_fact_yield_curve[date] ), bi_fact_yield_curve[date] <= D, REMOVEFILTERS ( bi_dim_date ) )
+				RETURN CALCULATE ( AVERAGE ( bi_fact_yield_curve[yield_pct] ), bi_fact_yield_curve[date] = LastD, REMOVEFILTERS ( bi_dim_date ) )
+			formatString: 0.00
+			displayFolder: Curve
+
+		measure 'Yield 1 Year Earlier' =
+				VAR D = MAX ( bi_dim_date[date] ) - 365
+				VAR LastD = CALCULATE ( MAX ( bi_fact_yield_curve[date] ), bi_fact_yield_curve[date] <= D, REMOVEFILTERS ( bi_dim_date ) )
+				RETURN CALCULATE ( AVERAGE ( bi_fact_yield_curve[yield_pct] ), bi_fact_yield_curve[date] = LastD, REMOVEFILTERS ( bi_dim_date ) )
+			formatString: 0.00
+			displayFolder: Curve
+
+		measure '10Y-2Y Spread' = AVERAGE ( bi_mart_macro_monthly[term_spread_10y_2y] )
+			formatString: 0.00
+			displayFolder: Curve
+
+		measure 'Curve Inverted' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[term_spread_10y_2y] ) )
+				RETURN IF ( CALCULATE ( [10Y-2Y Spread], bi_mart_macro_monthly[month] = M ) < 0, "Inverted", "Normal" )
+			displayFolder: Curve
+
+		measure 'Series Monitored' = COUNTROWS ( freshness_report )
+			formatString: 0
+			displayFolder: Ops
+
+		measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } )
+			formatString: 0
+			displayFolder: Ops
+
+		measure 'Data Freshness Score' = DIVIDE ( CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "ok", "retired" } ), [Series Monitored] )
+			formatString: 0%
+			displayFolder: Ops
+
+		measure 'Ingestion Runs' = DISTINCTCOUNT ( bronze_ingestion_log[run_id] )
+			formatString: 0
+			displayFolder: Ops
+
+		measure 'Series Changed (runs)' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[changed] = TRUE () )
+			formatString: 0
+			displayFolder: Ops
+
+		measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" )
+			formatString: 0
+			displayFolder: Ops
