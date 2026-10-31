@@ -156,4 +156,6 @@ Foreign exchange series are limited to 2017 onward — a known limitation of the
 
 ## Next Step
 
-This dictionary provides the theoretical financial meaning and empirically verified technical characteristics of each series. The next step is Phase 2 (Bronze Ingestion): designing the unified Delta Lake schema and building the ingestion pipeline based on the technical schema dictionary (`technical_schema_dictionary.csv`).
+Phase 2 is implemented in `src/cfl/` (see the README): the selection above has been extended with real-economy,
+commodity, expectations and US series in `config/sources.yaml`, and is ingested into a Bronze/Silver/Gold
+Parquet lakehouse that produces the monthly model table.

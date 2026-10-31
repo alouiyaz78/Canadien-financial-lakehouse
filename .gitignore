@@ -8,3 +8,15 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Lakehouse storage (rebuilt by `uv run cfl run`)
+data/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Power BI project caches (keep the .pbip definition files)
+powerbi/**/.pbi/cache.abf
+powerbi/**/.pbi/localSettings.json

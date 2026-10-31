@@ -1,0 +1,219 @@
+# BI data dictionary
+
+Generated from [`config/bi_dictionary.yaml`](../config/bi_dictionary.yaml) by `uv run cfl docs` — do not edit by hand. The same descriptions are written to Unity Catalog as table and column comments.
+
+| Table | Kind | Grain | Description |
+| --- | --- | --- | --- |
+| [`bi_dim_date`](#bi_dim_date) | dimension | one row per calendar day since 1990-01-01 | Calendar used by every time filter; mark it as the date table in Power BI. |
+| [`bi_dim_series`](#bi_dim_series) | dimension | one row per series of config/sources.yaml | Identity card of every economic series — source, theme, unit, frequency and publication lag. |
+| [`bi_fact_observations`](#bi_fact_observations) | fact | one row per series and reference date | Every observation of every series since 1990, in long format, at its reference date. |
+| [`bi_fact_policy_calendar`](#bi_fact_policy_calendar) | fact | one row per scheduled Bank of Canada announcement | Scheduled decision dates from config/boc_calendar.yaml (countdown to the next decision). |
+| [`bi_fact_policy_decisions`](#bi_fact_policy_decisions) | fact | one row per change of the target overnight rate (since 2001) | Every policy-rate move with its announcement date and the easing / tightening cycle it belongs to. |
+| [`bi_fact_yield_curve`](#bi_fact_yield_curve) | fact | one row per day and tenor | Daily Government of Canada yield curve, from the overnight policy rate to 30 years. |
+| [`bi_mart_energy_passthrough`](#bi_mart_energy_passthrough) | mart | one row per lag, 0 to 18 months | Correlation of energy-price inflation in a month with headline and core inflation k months later (since 2000). |
+| [`bi_mart_macro_monthly`](#bi_mart_macro_monthly) | mart | one row per month since January 1990 | Monthly indicators at reference dates for the Power BI report: inflation vs target, Taylor rule, oil in CAD, effective tariffs, mortgage renewal shock and spreads. An empty cell = not yet published. |
+| [`bi_mart_policy_signals`](#bi_mart_policy_signals) | mart | one row per indicator, latest available value | Hawkish / dovish scorecard; the sum of signal is the net policy stance. |
+| [`bronze_ingestion_log`](#bronze_ingestion_log) | operations | one row per series and ingestion run | Audit trail of every download — what was fetched, when, and whether it changed. |
+| [`freshness_report`](#freshness_report) | operations | one row per series, recomputed at every job run | Is each series as recent as its publication calendar implies? |
+
+## bi_dim_date
+
+*dimension — one row per calendar day since 1990-01-01.* Calendar used by every time filter; mark it as the date table in Power BI.
+
+| Column | Description |
+| --- | --- |
+| `date` | Calendar day (DATE). Relationship key to every fact table. |
+| `year` | Calendar year. |
+| `quarter` | Calendar quarter label (Q1–Q4). |
+| `month_number` | Month number 1–12; sort key for month_name. |
+| `month_name` | Short month name (Jan–Dec). |
+| `year_month` | Year and month as text (YYYY-MM). |
+| `month_start` | First day of the month (DATE). |
+| `decade` | Decade label (e.g. 2020s). |
+
+## bi_dim_series
+
+*dimension — one row per series of config/sources.yaml.* Identity card of every economic series — source, theme, unit, frequency and publication lag.
+
+| Column | Description |
+| --- | --- |
+| `name` | Internal series name. Relationship key to bi_fact_observations. |
+| `description` | Human-readable description of the series. |
+| `source` | Source system — valet (Bank of Canada), statcan, fred or census. |
+| `source_id` | Identifier of the series in its source (Valet id, StatCan vector, FRED id, Census country code). |
+| `domain` | Business theme (interest_rates, inflation, labour, trade_policy…). |
+| `unit` | Unit of the values. |
+| `frequency` | Native frequency — D daily, W weekly, M monthly, Q quarterly. |
+| `release_lag_months` | Months between the end of the reference period and publication. |
+| `discontinued` | True for a series stopped at the source and kept for history only. |
+
+## bi_fact_observations
+
+*fact — one row per series and reference date.* Every observation of every series since 1990, in long format, at its reference date.
+
+| Column | Description |
+| --- | --- |
+| `name` | Series name (key to bi_dim_series). |
+| `date` | Reference date of the value (key to bi_dim_date). |
+| `value` | Observed value, in the unit of the series. |
+
+## bi_fact_policy_calendar
+
+*fact — one row per scheduled Bank of Canada announcement.* Scheduled decision dates from config/boc_calendar.yaml (countdown to the next decision).
+
+| Column | Description |
+| --- | --- |
+| `date` | Announcement date. |
+| `type` | Event type (announcement). |
+| `outcome` | Decision taken; empty until the announcement. |
+| `mpr` | True when a Monetary Policy Report is published the same day. |
+
+## bi_fact_policy_decisions
+
+*fact — one row per change of the target overnight rate (since 2001).* Every policy-rate move with its announcement date and the easing / tightening cycle it belongs to.
+
+| Column | Description |
+| --- | --- |
+| `date` | Effective date of the new rate (business day after the announcement). |
+| `announcement_date` | Announcement date (key to bi_dim_date). |
+| `previous_rate` | Target rate before the move, in percent. |
+| `new_rate` | Target rate after the move, in percent. |
+| `change_bp` | Size of the move in basis points (25 bp = 0.25 point). |
+| `direction` | Hike or Cut. |
+| `days_since_previous_move` | Days since the previous move. |
+| `cycle_id` | Cycle number; increases each time the direction reverses. |
+| `cycle` | Cycle name — month it started and its direction (e.g. 2024-06 Cut). |
+| `cumulative_cycle_bp` | Total change since the start of the cycle, in basis points. |
+
+## bi_fact_yield_curve
+
+*fact — one row per day and tenor.* Daily Government of Canada yield curve, from the overnight policy rate to 30 years.
+
+| Column | Description |
+| --- | --- |
+| `date` | Trading day (key to bi_dim_date). |
+| `tenor` | Tenor label — Overnight, 1M, 3M, 6M, 1Y, 2Y, 5Y, 10Y, 30Y. |
+| `tenor_months` | Tenor in months; sort key for tenor (0 = overnight). |
+| `yield_pct` | Yield in percent. |
+
+## bi_mart_energy_passthrough
+
+*mart — one row per lag, 0 to 18 months.* Correlation of energy-price inflation in a month with headline and core inflation k months later (since 2000).
+
+| Column | Description |
+| --- | --- |
+| `lag_months` | Lag k, in months. |
+| `corr_headline` | Correlation with headline CPI inflation k months later. |
+| `corr_core` | Correlation with core inflation (core_avg) k months later; its peak = the pass-through delay. |
+| `n_months` | Number of months used in the correlation. |
+
+## bi_mart_macro_monthly
+
+*mart — one row per month since January 1990.* Monthly indicators at reference dates for the Power BI report: inflation vs target, Taylor rule, oil in CAD, effective tariffs, mortgage renewal shock and spreads. An empty cell = not yet published.
+
+| Column | Description |
+| --- | --- |
+| `month` | First day of the month (key to bi_dim_date). |
+| `is_partial_month` | True for the current month, still incomplete. |
+| `policy_rate` | Target overnight rate at month end, percent. |
+| `corra` | Canadian Overnight Repo Rate Average, monthly mean, percent. |
+| `tbill_3m` | 3-month Treasury bill yield, monthly mean, percent. |
+| `tbill_6m` | 6-month Treasury bill yield, monthly mean, percent. |
+| `bond_2y` | 2-year Government of Canada bond yield, monthly mean, percent. |
+| `bond_5y` | 5-year Government of Canada bond yield, monthly mean, percent. |
+| `bond_10y` | 10-year Government of Canada bond yield, monthly mean, percent. |
+| `us_fed_funds` | US effective federal funds rate, percent. |
+| `term_spread_10y_2y` | 10-year minus 2-year yield (curve slope), points; negative = inverted curve. |
+| `market_implied_6m_bp` | 6-month T-bill minus policy rate, basis points — the move markets price over 6 months. |
+| `ca_us_policy_gap` | Bank of Canada policy rate minus Fed funds, points. |
+| `ca_us_10y_spread` | Canada minus US 10-year yield, points. |
+| `cpi_headline_yoy` | Headline CPI inflation, year over year, percent (from the all-items index). |
+| `cpi_trim` | CPI-trim core inflation, percent. |
+| `cpi_median` | CPI-median core inflation, percent. |
+| `cpi_common` | CPI-common core inflation, percent. |
+| `core_avg` | Average of the three core measures, percent. |
+| `core_range` | Highest minus lowest core measure, points (disagreement between measures). |
+| `headline_minus_core` | Headline minus core_avg, points — energy and other transitory shocks. |
+| `inflation_target` | Bank of Canada inflation target (2%). |
+| `target_low` | Lower bound of the control range (1%). |
+| `target_high` | Upper bound of the control range (3%). |
+| `infl_exp_consensus_2_3y` | Consensus Forecasts inflation expected 2–3 years ahead, percent. |
+| `bos_firms_infl_above_3` | Share of firms expecting inflation above 3% (Business Outlook Survey), percent. |
+| `unemployment_rate` | Unemployment rate, 15+, seasonally adjusted, percent. |
+| `unemployment_trend_10y` | 10-year rolling median of the unemployment rate, percent (robust to the 2020 spike). |
+| `unemployment_gap` | Unemployment rate minus its 10-year median, points; positive = slack. |
+| `employment_yoy` | Employment, year-over-year change, percent. |
+| `gdp_yoy` | Real monthly GDP, year-over-year change, percent. |
+| `wage_growth_lfs` | Wage growth from the Labour Force Survey, year over year, percent. |
+| `real_policy_rate` | Policy rate minus core_avg, points. |
+| `taylor_rule_rate` | Taylor-rule rate, percent = 0.75 (real neutral) + core_avg + 0.5 × (core_avg − 2) − 0.5 × 2 × unemployment_gap. |
+| `taylor_gap` | Policy rate minus Taylor-rule rate, points; negative = policy looser than the rule. |
+| `wti_usd` | WTI crude oil, US dollars per barrel. |
+| `usdcad` | Canadian dollars per US dollar, monthly mean (legacy noon rate before 2017). |
+| `wti_cad` | WTI crude oil in Canadian dollars per barrel (wti_usd × usdcad). |
+| `wti_usd_yoy` | WTI in USD, year-over-year change, percent. |
+| `wti_cad_yoy` | WTI in CAD, year-over-year change, percent. |
+| `bcpi_energy_yoy` | Bank of Canada commodity price index, energy, year-over-year change, percent. |
+| `bcpi_ex_energy_yoy` | Bank of Canada commodity price index excluding energy, year-over-year change, percent. |
+| `us_tariff_rate_on_canada` | Effective US tariff on imports from Canada (duties / import value), percent. |
+| `us_tariff_rate_on_mexico` | Effective US tariff on imports from Mexico, percent. |
+| `us_tariff_rate_on_china` | Effective US tariff on imports from China, percent. |
+| `canada_tariff_advantage_vs_china` | China minus Canada effective tariff, points. |
+| `us_import_prices_from_canada_yoy` | US import prices of goods from Canada (before duties), year over year, percent. |
+| `trade_policy_uncertainty` | Trade-policy uncertainty index (newspaper based). |
+| `usdcad_yoy` | USD/CAD, year-over-year change, percent; positive = weaker Canadian dollar. |
+| `mortgage_5y` | Posted conventional 5-year mortgage rate, monthly mean, percent. |
+| `mortgage_5y_at_origination` | Same rate 60 months earlier — what a household renewing today signed. |
+| `renewal_rate_change` | mortgage_5y minus mortgage_5y_at_origination, points. |
+| `mortgage_spread_5y` | 5-year mortgage rate minus 5-year bond yield, points (bank margin). |
+
+## bi_mart_policy_signals
+
+*mart — one row per indicator, latest available value.* Hawkish / dovish scorecard; the sum of signal is the net policy stance.
+
+| Column | Description |
+| --- | --- |
+| `indicator` | Indicator name. |
+| `column` | Source column in bi_mart_macro_monthly. |
+| `latest_value` | Latest published value. |
+| `unit` | Unit of latest_value. |
+| `reference_month` | Month of latest_value. |
+| `hawkish_threshold` | Beyond this value the indicator argues for a hike. |
+| `dovish_threshold` | Beyond this value, the other way, it argues for a cut. |
+| `signal` | +1 hawkish (hike), 0 neutral, -1 dovish (cut). |
+| `signal_label` | Signal as text. |
+| `rationale` | Why the indicator matters (tooltip). |
+
+## bronze_ingestion_log
+
+*operations — one row per series and ingestion run.* Audit trail of every download — what was fetched, when, and whether it changed.
+
+| Column | Description |
+| --- | --- |
+| `run_id` | Job run that performed the ingestion. |
+| `name` | Series name. |
+| `source` | Source system. |
+| `source_id` | Identifier in the source. |
+| `ingested_at` | Download time (UTC). |
+| `status` | ok or error. |
+| `changed` | True when the payload differs from the previous snapshot (new data or revision). |
+| `url` | URL called (API key removed). |
+| `path` | Raw file in the Bronze volume. |
+| `bytes` | Size of the raw payload. |
+| `sha256` | SHA-256 of the payload, used to detect changes. |
+| `error` | Error message when status is error. |
+
+## freshness_report
+
+*operations — one row per series, recomputed at every job run.* Is each series as recent as its publication calendar implies?
+
+| Column | Description |
+| --- | --- |
+| `name` | Series name. |
+| `source` | Source system. |
+| `frequency` | Native frequency (D, W, M, Q). |
+| `status` | ok, late, missing or retired (discontinued series). |
+| `last_date` | Date of the latest observation. |
+| `age_days` | Age of the latest observation, in days. |
+| `max_age_days` | Maximum accepted age, derived from frequency and publication lag. |
+| `checked_at` | Date of the check. |

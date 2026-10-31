@@ -1,0 +1,8 @@
+# Bank of Canada fixed announcement dates (policy rate decisions) used by the Power BI report
+# ("next decision" countdown, decision markers). Past decisions are also derived automatically
+# from the policy-rate series (bi fact_policy_decisions); this file adds the *scheduled* dates.
+# Source: https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/
+# Add the next year's schedule when the Bank publishes it.
+decisions:
+  - {date: 2026-10-28, type: announcement, outcome: "Hike +25 bp to 2.50%", mpr: true}
+  - {date: 2026-12-09, type: announcement, outcome: null, mpr: false}
