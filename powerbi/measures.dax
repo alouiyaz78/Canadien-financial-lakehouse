@@ -84,9 +84,9 @@ RETURN
     SWITCH (
         TRUE (),
         ISBLANK ( Gap ), BLANK (),
-        Gap < -0.5, "Policy looser than the rule → argues for hikes",
-        Gap > 0.5, "Policy tighter than the rule → argues for cuts",
-        "Policy close to the rule"
+        Gap < -0.5, "Below the rule: room to hike",
+        Gap > 0.5, "Above the rule: room to cut",
+        "In line with the rule"
     )
 
 Net Policy Stance = SUM ( bi_mart_policy_signals[signal] )
