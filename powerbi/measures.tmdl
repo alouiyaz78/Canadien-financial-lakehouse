@@ -255,13 +255,13 @@ createOrReplace
 			displayFolder: Trade
 
 		measure 'Tariff Change vs Pre-2025 (pts)' =
-				VAR Before =
+				VAR Baseline =
 				    CALCULATE (
 				        AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] ),
 				        DATESBETWEEN ( bi_dim_date[date], DATE ( 2024, 1, 1 ), DATE ( 2024, 12, 31 ) ),
 				        REMOVEFILTERS ( bi_dim_date )
 				    )
-				RETURN [US Tariff on Canada (%)] - Before
+				RETURN [US Tariff on Canada (%)] - Baseline
 			formatString: 0.00
 			displayFolder: Trade
 
