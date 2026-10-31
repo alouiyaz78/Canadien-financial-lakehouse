@@ -167,3 +167,8 @@ segment de date unique ; carte `[Curve Inverted]`.
 2. Captures de chaque page dans `docs/img/powerbi_*.png` + un GIF de 20 s du simulateur hypothécaire
    et des curseurs de Taylor pour le README.
 3. Ajoute un texte alternatif à chaque visuel (accessibilité, très apprécié dans le secteur public).
+
+> **Paramètres what-if dans un Power BI en français** : la mesure générée s'appelle `Valeur X` et sa
+> valeur par défaut peut être du texte (`SELECTEDVALUE(..., "0.5")`), ce qui fait échouer les calculs
+> (« Failed to move the data reader to the next row »). Renommer en `X Value` et mettre une valeur
+> numérique : `SELECTEDVALUE ( 'Slack weight'[Slack weight], 0.5 )`.

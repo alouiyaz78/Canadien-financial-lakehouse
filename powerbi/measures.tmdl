@@ -60,8 +60,12 @@ createOrReplace
 
 		/// Taylor rule with the what-if parameters (the Gold column taylor_rule_rate uses the defaults)
 		measure 'Taylor Rule Rate' =
+				// Months without core inflation or unemployment (current, unpublished month) stay blank instead of dropping to r*
 				AVERAGEX (
-				    bi_mart_macro_monthly,
+				    FILTER (
+				        bi_mart_macro_monthly,
+				        NOT ISBLANK ( bi_mart_macro_monthly[core_avg] ) && NOT ISBLANK ( bi_mart_macro_monthly[unemployment_gap] )
+				    ),
 				    [Neutral real rate Value]
 				        + bi_mart_macro_monthly[core_avg]
 				        + [Inflation weight Value] * ( bi_mart_macro_monthly[core_avg] - 2 )
