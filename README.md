@@ -3,7 +3,7 @@
 **Forecasting Canadian core inflation and Bank of Canada policy-rate decisions from public macro-financial data.**
 
 On **28 October 2026** the Bank of Canada raised its policy rate by 25 bp to **2.50 %** — its first hike since
-July 2023 — citing an energy-price shock that pushed headline CPI to 3.2 % while core inflation stayed near 2 %.
+July 2023 — citing an energy-price shock that pushed headline CPI to 3.1 % while core inflation stayed near 2 %.
 This project builds the data pipeline and models needed to study exactly that kind of situation:
 
 | | Question | Target |
