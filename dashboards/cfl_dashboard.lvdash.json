@@ -82,9 +82,9 @@
     },
     {
       "name": "freshness_late",
-      "displayName": "Late or missing series",
+      "displayName": "Freshness by series",
       "queryLines": [
-        "SELECT name, source, frequency, CAST(last_date AS STRING) AS last_date, age_days, max_age_days FROM workspace.cfl.freshness_report WHERE status IN ('late', 'missing') ORDER BY age_days DESC"
+        "SELECT name, status, source, CAST(last_date AS STRING) AS last_date, age_days, max_age_days FROM workspace.cfl.freshness_report ORDER BY age_days / max_age_days DESC"
       ]
     },
     {
@@ -467,42 +467,121 @@
                 "columns": [
                   {
                     "fieldName": "indicator",
-                    "displayName": "Indicator",
-                    "title": "Indicator",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
                     "type": "string",
                     "displayAs": "string",
                     "visible": true,
-                    "order": 100000
+                    "order": 100000,
+                    "title": "Indicator",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Indicator"
                   },
                   {
                     "fieldName": "latest_value",
-                    "displayName": "Latest",
-                    "title": "Latest",
-                    "type": "number",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
                     "displayAs": "number",
                     "visible": true,
-                    "order": 100001
+                    "order": 100001,
+                    "title": "Latest",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Latest",
+                    "numberFormat": "0.00"
                   },
                   {
                     "fieldName": "unit",
-                    "displayName": "Unit",
-                    "title": "Unit",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
                     "type": "string",
                     "displayAs": "string",
                     "visible": true,
-                    "order": 100002
+                    "order": 100002,
+                    "title": "Unit",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Unit"
                   },
                   {
                     "fieldName": "signal_label",
-                    "displayName": "Signal",
-                    "title": "Signal",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
                     "type": "string",
                     "displayAs": "string",
                     "visible": true,
-                    "order": 100003
+                    "order": 100003,
+                    "title": "Signal",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Signal"
                   }
                 ]
               },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": false,
               "frame": {
                 "showTitle": true,
                 "title": "Hawkish / dovish scorecard"
@@ -991,12 +1070,12 @@
                       "expression": "`name`"
                     },
                     {
-                      "name": "source",
-                      "expression": "`source`"
+                      "name": "status",
+                      "expression": "`status`"
                     },
                     {
-                      "name": "frequency",
-                      "expression": "`frequency`"
+                      "name": "source",
+                      "expression": "`source`"
                     },
                     {
                       "name": "last_date",
@@ -1022,63 +1101,179 @@
                 "columns": [
                   {
                     "fieldName": "name",
-                    "displayName": "Series",
-                    "title": "Series",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
                     "type": "string",
                     "displayAs": "string",
                     "visible": true,
-                    "order": 100000
+                    "order": 100000,
+                    "title": "Series",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Series"
+                  },
+                  {
+                    "fieldName": "status",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100001,
+                    "title": "Status",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Status"
                   },
                   {
                     "fieldName": "source",
-                    "displayName": "Source",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100002,
                     "title": "Source",
-                    "type": "string",
-                    "displayAs": "string",
-                    "visible": true,
-                    "order": 100001
-                  },
-                  {
-                    "fieldName": "frequency",
-                    "displayName": "Freq.",
-                    "title": "Freq.",
-                    "type": "string",
-                    "displayAs": "string",
-                    "visible": true,
-                    "order": 100002
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Source"
                   },
                   {
                     "fieldName": "last_date",
-                    "displayName": "Last observation",
-                    "title": "Last observation",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
                     "type": "string",
                     "displayAs": "string",
                     "visible": true,
-                    "order": 100003
+                    "order": 100003,
+                    "title": "Last observation",
+                    "allowSearch": false,
+                    "alignContent": "left",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Last observation"
                   },
                   {
                     "fieldName": "age_days",
-                    "displayName": "Age (days)",
-                    "title": "Age (days)",
-                    "type": "number",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
                     "displayAs": "number",
                     "visible": true,
-                    "order": 100004
+                    "order": 100004,
+                    "title": "Age (days)",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Age (days)",
+                    "numberFormat": "0"
                   },
                   {
                     "fieldName": "max_age_days",
-                    "displayName": "Max age",
-                    "title": "Max age",
-                    "type": "number",
+                    "booleanValues": [
+                      "false",
+                      "true"
+                    ],
+                    "imageUrlTemplate": "{{ @ }}",
+                    "imageTitleTemplate": "{{ @ }}",
+                    "imageWidth": "",
+                    "imageHeight": "",
+                    "linkUrlTemplate": "{{ @ }}",
+                    "linkTextTemplate": "{{ @ }}",
+                    "linkTitleTemplate": "{{ @ }}",
+                    "linkOpenInNewTab": true,
+                    "type": "float",
                     "displayAs": "number",
                     "visible": true,
-                    "order": 100005
+                    "order": 100005,
+                    "title": "Max age (days)",
+                    "allowSearch": false,
+                    "alignContent": "right",
+                    "allowHTML": false,
+                    "highlightLinks": false,
+                    "useMonospaceFont": false,
+                    "preserveWhitespace": false,
+                    "displayName": "Max age (days)",
+                    "numberFormat": "0"
                   }
                 ]
               },
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": false,
               "frame": {
                 "showTitle": true,
-                "title": "Late or missing series"
+                "title": "Freshness by series (closest to its SLA first)"
               }
             }
           },

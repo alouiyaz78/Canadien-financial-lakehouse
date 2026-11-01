@@ -97,9 +97,9 @@ SELECT 'One year ago', c.tenor_months, c.yield_pct FROM {SCHEMA}.bi_fact_yield_c
         f"SELECT status, count(*) AS series FROM {SCHEMA}.freshness_report GROUP BY status",
     ),
     "freshness_late": (
-        "Late or missing series",
-        f"SELECT name, source, frequency, CAST(last_date AS STRING) AS last_date, age_days, max_age_days "
-        f"FROM {SCHEMA}.freshness_report WHERE status IN ('late', 'missing') ORDER BY age_days DESC",
+        "Freshness by series",
+        f"SELECT name, status, source, CAST(last_date AS STRING) AS last_date, age_days, max_age_days "
+        f"FROM {SCHEMA}.freshness_report ORDER BY age_days / max_age_days DESC",
     ),
     "ingestion": (
         "Ingestion activity (30 days)",
@@ -171,19 +171,48 @@ def xy_chart(name, kind, ds, x, y, color, title, pos, *, x_type="temporal", x_la
 
 
 def table(name: str, ds: str, columns: list[tuple[str, str, str]], title: str, pos: dict) -> dict:
-    cols = [
-        {
+    """Table widget, spec v1 with the full column properties the AI/BI importer expects."""
+    cols = []
+    for i, (field, label, kind) in enumerate(columns):
+        col = {
             "fieldName": field,
-            "displayName": label,
-            "title": label,
-            "type": kind,
-            "displayAs": kind,
+            "booleanValues": ["false", "true"],
+            "imageUrlTemplate": "{{ @ }}",
+            "imageTitleTemplate": "{{ @ }}",
+            "imageWidth": "",
+            "imageHeight": "",
+            "linkUrlTemplate": "{{ @ }}",
+            "linkTextTemplate": "{{ @ }}",
+            "linkTitleTemplate": "{{ @ }}",
+            "linkOpenInNewTab": True,
+            "type": "float" if kind in ("number", "integer") else "string",
+            "displayAs": "number" if kind in ("number", "integer") else "string",
             "visible": True,
             "order": 100000 + i,
+            "title": label,
+            "allowSearch": False,
+            "alignContent": "left" if kind == "string" else "right",
+            "allowHTML": False,
+            "highlightLinks": False,
+            "useMonospaceFont": False,
+            "preserveWhitespace": False,
+            "displayName": label,
         }
-        for i, (field, label, kind) in enumerate(columns)
-    ]
-    spec = {"version": 1, "widgetType": "table", "encodings": {"columns": cols}, "frame": frame(title)}
+        if kind in ("number", "integer"):
+            col["numberFormat"] = "0.00" if kind == "number" else "0"
+        cols.append(col)
+    spec = {
+        "version": 1,
+        "widgetType": "table",
+        "encodings": {"columns": cols},
+        "invisibleColumns": [],
+        "allowHTMLByDefault": False,
+        "itemsPerPage": 25,
+        "paginationSize": "default",
+        "condensed": True,
+        "withRowNumber": False,
+        "frame": frame(title),
+    }
     return {
         "widget": {"name": name, "queries": query(ds, [c[0] for c in columns]), "spec": spec},
         "position": pos,
@@ -336,13 +365,13 @@ OPS_PAGE = [
         "freshness_late",
         [
             ("name", "Series", "string"),
+            ("status", "Status", "string"),
             ("source", "Source", "string"),
-            ("frequency", "Freq.", "string"),
             ("last_date", "Last observation", "string"),
-            ("age_days", "Age (days)", "number"),
-            ("max_age_days", "Max age", "number"),
+            ("age_days", "Age (days)", "integer"),
+            ("max_age_days", "Max age (days)", "integer"),
         ],
-        "Late or missing series",
+        "Freshness by series (closest to its SLA first)",
         position(2, 2, 4, 6),
     ),
     xy_chart(
