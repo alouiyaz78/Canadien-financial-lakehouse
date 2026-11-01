@@ -107,9 +107,16 @@ def sync_model(measures: list[dict], path: Path = MODEL_TABLE) -> None:
     if not path.exists():
         return
     text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    # Look for each measure's lineage tag inside its own block only (a measure without a tag must not
+    # borrow the next object's tag: duplicated tags make Power BI refuse to open the project).
     tags: dict[str, str] = {}
-    for match in re.finditer(r"^\tmeasure (.+?) =(?:.|\n)*?^\t\tlineageTag: (\S+)", text, re.M):
-        tags[match.group(1).strip("'").replace("''", "'")] = match.group(2)
+    taken = set(re.findall(r"^\t(?:column|table|partition)[^\n]*\n(?:\t\t[^\n]*\n)*?\t\tlineageTag: (\S+)", text, re.M))
+    taken |= set(re.findall(r"^table .+\n\tlineageTag: (\S+)", text, re.M))
+    for block in text.split("\n\n"):
+        head = re.search(r"^\tmeasure (.+?) =", block, re.M)
+        tag = re.search(r"^\t\tlineageTag: (\S+)", block, re.M)
+        if head and tag and tag.group(1) not in taken and tag.group(1) not in tags.values():
+            tags[head.group(1).strip("'").replace("''", "'")] = tag.group(1)
     table_tag = re.search(r"^table .+\n\tlineageTag: (\S+)", text, re.M).group(1)
     tail = text[text.index("\n\tcolumn ") + 1 :]
     if "\t\tisHidden" not in tail.split("\n\n")[0]:

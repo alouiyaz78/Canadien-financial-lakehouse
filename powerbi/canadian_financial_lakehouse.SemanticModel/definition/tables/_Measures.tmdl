@@ -449,14 +449,12 @@ table _Measures
 			RETURN CALCULATE ( AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] ), bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 		formatString: 0.00
 		displayFolder: Trade
-		lineageTag: 5664cee6-fa11-45e5-b855-d91dda483d00
 
 	measure 'Latest Tariff on Mexico (%)' =
 			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] ), REMOVEFILTERS ( bi_dim_date ) )
 			RETURN CALCULATE ( AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] ), bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 		formatString: 0.00
 		displayFolder: Trade
-		lineageTag: 5664cee6-fa11-45e5-b855-d91dda483d00
 
 	measure 'Latest Tariff on China (%)' =
 			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_tariff_rate_on_china] ), REMOVEFILTERS ( bi_dim_date ) )
