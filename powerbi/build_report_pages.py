@@ -83,6 +83,8 @@ def title_objects(title: str | None, subtitle: str | None = None) -> dict:
     out = {"title": [{"properties": {"show": lit("true"), "text": text(title)}}]}
     if subtitle:
         out["subTitle"] = [{"properties": {"show": lit("true"), "text": text(subtitle)}}]
+    else:  # otherwise Power BI shows an automatic "X et Y par month_start" subtitle
+        out["subTitle"] = [{"properties": {"show": lit("false")}}]
     return out
 
 
