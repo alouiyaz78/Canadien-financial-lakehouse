@@ -68,6 +68,11 @@
           "name": "Canadian_Winter3813769444405728.json",
           "path": "Canadian_Winter3813769444405728.json",
           "type": "CustomTheme"
+        },
+        {
+          "name": "cfl_background.png",
+          "path": "cfl_background.png",
+          "type": "Image"
         }
       ]
     }

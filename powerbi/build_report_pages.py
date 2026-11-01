@@ -777,6 +777,38 @@ def fix_policy_page() -> None:
         dump(path, visual)
 
 
+BACKGROUND = "cfl_background.png"  # drawn by make_background.py
+
+
+def apply_background() -> None:
+    """Register the background image and use it on every page (visuals keep their white backgrounds)."""
+    report_path = REPORT / "report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8-sig"))
+    registered = next(p for p in report["resourcePackages"] if p["name"] == "RegisteredResources")
+    if not any(item["name"] == BACKGROUND for item in registered["items"]):
+        registered["items"].append({"name": BACKGROUND, "path": BACKGROUND, "type": "Image"})
+        dump(report_path, report)
+    image = {
+        "image": {
+            "name": text(BACKGROUND),
+            "url": {
+                "expr": {
+                    "ResourcePackageItem": {
+                        "PackageName": "RegisteredResources",
+                        "PackageType": 1,
+                        "ItemName": BACKGROUND,
+                    }
+                }
+            },
+            "scaling": text("Fill"),
+        }
+    }
+    for path in PAGES.glob("*/page.json"):
+        page = json.loads(path.read_text(encoding="utf-8-sig"))
+        page.setdefault("objects", {})["background"] = [{"properties": {"image": image, "transparency": lit("0D")}}]
+        dump(path, page)
+
+
 def reset_sliders() -> None:
     """Drop the slider positions saved on page 1, so the what-if defaults (0.75 / 0.5 / 0.5) apply."""
     for path in PAGES.glob("*/visuals/*/visual.json"):
@@ -804,6 +836,7 @@ def main() -> None:
     dump(meta_path, meta)
     reset_sliders()
     fix_policy_page()
+    apply_background()
     print(f"{len(pages)} pages written: " + ", ".join(p.display for p in pages))
 
 
