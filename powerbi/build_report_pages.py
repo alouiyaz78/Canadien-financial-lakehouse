@@ -754,31 +754,33 @@ def back_button_visual() -> dict:
     return {
         "visualType": "actionButton",
         "objects": {
+            # "show" switches are state-independent; content and colours are set for the default state.
             "icon": [
+                {"properties": {"show": lit("true")}},
                 {"properties": {"shapeType": text("back"), "lineColor": {"solid": {"color": text("#FFFFFF")}}},
-                 "selector": default}
+                 "selector": default},
             ],
             "text": [
+                {"properties": {"show": lit("true")}},
                 {
                     "properties": {
-                        "show": lit("true"),
                         "text": text("Overview"),
                         "fontColor": {"solid": {"color": text("#FFFFFF")}},
                         "fontSize": lit("14D"),
                         "bold": lit("true"),
                     },
                     "selector": default,
-                }
+                },
             ],
             "fill": [
+                {"properties": {"show": lit("true")}},
                 {
                     "properties": {
-                        "show": lit("true"),
                         "fillColor": {"solid": {"color": text("#0B2545")}},
                         "transparency": lit("0D"),
                     },
                     "selector": default,
-                }
+                },
             ],
         },
         "visualContainerObjects": {
