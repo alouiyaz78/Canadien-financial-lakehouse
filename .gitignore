@@ -20,3 +20,4 @@ data/
 # Power BI project caches (keep the .pbip definition files)
 powerbi/**/.pbi/cache.abf
 powerbi/**/.pbi/localSettings.json
+*.pbix
