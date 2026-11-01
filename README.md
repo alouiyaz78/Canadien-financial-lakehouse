@@ -92,12 +92,19 @@ Outputs:
 
 ## Power BI report
 
-Four analytical pages built on a star schema of Gold **BI marts** (at reference dates, unlike the
-ML table which is aligned on publication dates), refreshed by the same daily job:
+**[▶ Open the interactive report](https://app.powerbi.com/view?r=eyJrIjoiNGYwY2Q2YWYtNmRmNi00OTE0LTg5NTctYzU0NGE4ZDExNDNkIiwidCI6ImI5M2U3YTM0LWNlNDItNGUwNi1iMTI3LTQ0N2JmOGY1YzFiZCJ9)** (public, no sign-in)
+
+[![Power BI report — Overview page](docs/img/powerbi_overview.png)](https://app.powerbi.com/view?r=eyJrIjoiNGYwY2Q2YWYtNmRmNi00OTE0LTg5NTctYzU0NGE4ZDExNDNkIiwidCI6ImI5M2U3YTM0LWNlNDItNGUwNi1iMTI3LTQ0N2JmOGY1YzFiZCJ9)
+
+An overview page and six analytical pages built on a star schema of Gold **BI marts** (at reference dates,
+unlike the ML table which is aligned on publication dates), refreshed by the same daily job. Hover the **?**
+of any chart for a plain-language explanation.
 
 | Page | Question answered | Beyond a standard dashboard |
 |---|---|---|
+| Overview | Where does the economy stand today? | Six headline KPIs and mini-trends linking to each analysis |
 | Policy monitor | Will the Bank hike, hold or cut? | Taylor rule with what-if parameters, market-implied path, hawkish/dovish scorecard |
+| Signals & inflation | Which indicators push towards a hike or a cut? | Hawkish/dovish signal table with colour-coded readings |
 | Oil shock | Is the 2026 energy shock spreading to core prices? | Oil priced in CAD, FX effect, measured energy → core pass-through lag |
 | Tariffs | What does Canada actually pay, and who absorbs it? | Effective (paid) tariff vs Mexico/China, exporter price absorption |
 | Mortgage renewal | What does a household renewing today pay? | Payment-shock simulator (semi-annual compounding, remaining amortization) |
@@ -154,7 +161,7 @@ discovery/                   raw catalog extraction and outputs
 - [x] Phase 1 — Data discovery: catalog exploration, series selection, quality checks
 - [x] Phase 2 — Pipeline: multi-source ingestion, Bronze/Silver/Gold, real-time alignment, tests
 - [x] Phase 2b — Databricks: Asset Bundle, Unity Catalog tables, daily serverless Job
-- [x] Phase 2c — BI marts + Power BI model and measures (report pages: in progress)
+- [x] Phase 2c — BI marts + Power BI report (7 pages, published) + Databricks AI/BI dashboard
 - [ ] Phase 3 — Baselines: random walk, AR(p), Bank-target (2 %) benchmark; rolling-origin backtest
 - [ ] Phase 4 — Models: penalised regression, gradient boosting; ordinal / multinomial model for problem B
 - [ ] Phase 5 — Interpretation: SHAP, error analysis on 2008, 2020–22 and the 2026 energy shock
