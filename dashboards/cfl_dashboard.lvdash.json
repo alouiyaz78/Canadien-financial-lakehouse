@@ -1,0 +1,1162 @@
+{
+  "datasets": [
+    {
+      "name": "kpis",
+      "displayName": "Headline KPIs",
+      "queryLines": [
+        "SELECT\n",
+        "  (SELECT yield_pct FROM workspace.cfl.bi_fact_yield_curve WHERE tenor = 'Overnight' ORDER BY date DESC LIMIT 1) AS policy_rate,\n",
+        "  (SELECT round(cpi_headline_yoy, 1) FROM workspace.cfl.bi_mart_macro_monthly WHERE cpi_headline_yoy IS NOT NULL ORDER BY month DESC LIMIT 1) AS headline_cpi,\n",
+        "  (SELECT round(core_avg, 1) FROM workspace.cfl.bi_mart_macro_monthly WHERE core_avg IS NOT NULL ORDER BY month DESC LIMIT 1) AS core_inflation,\n",
+        "  (SELECT sum(signal) FROM workspace.cfl.bi_mart_policy_signals) AS net_stance,\n",
+        "  (SELECT datediff(min(date), current_date()) FROM workspace.cfl.bi_fact_policy_calendar WHERE date >= current_date()) AS days_to_decision,\n",
+        "  (SELECT round(100 * avg(CASE WHEN status IN ('ok', 'retired') THEN 1 ELSE 0 END)) FROM workspace.cfl.freshness_report) AS fresh_pct"
+      ]
+    },
+    {
+      "name": "taylor",
+      "displayName": "Policy rate vs Taylor rule",
+      "queryLines": [
+        "SELECT month, series, value FROM workspace.cfl.bi_mart_macro_monthly LATERAL VIEW stack(2, 'Policy rate', policy_rate, 'Taylor rule', taylor_rule_rate) s AS series, value WHERE month >= DATE'2000-01-01' AND value IS NOT NULL"
+      ]
+    },
+    {
+      "name": "inflation",
+      "displayName": "Inflation vs target",
+      "queryLines": [
+        "SELECT month, series, value FROM workspace.cfl.bi_mart_macro_monthly LATERAL VIEW stack(5, 'Headline CPI', cpi_headline_yoy, 'CPI-trim', cpi_trim, 'CPI-median', cpi_median, 'Band low (1%)', target_low, 'Band high (3%)', target_high) s AS series, value WHERE month >= DATE'2015-01-01' AND value IS NOT NULL"
+      ]
+    },
+    {
+      "name": "signals",
+      "displayName": "Hawkish / dovish scorecard",
+      "queryLines": [
+        "SELECT indicator, round(latest_value, 2) AS latest_value, unit, signal_label FROM workspace.cfl.bi_mart_policy_signals ORDER BY signal DESC, indicator"
+      ]
+    },
+    {
+      "name": "curve",
+      "displayName": "Yield curve today vs one year ago",
+      "queryLines": [
+        "WITH last_day AS (SELECT max(date) AS d FROM workspace.cfl.bi_fact_yield_curve),\n",
+        "year_ago AS (SELECT max(c.date) AS d FROM workspace.cfl.bi_fact_yield_curve c, last_day WHERE c.date <= date_sub(last_day.d, 365))\n",
+        "SELECT 'Today' AS curve, c.tenor_months, c.yield_pct FROM workspace.cfl.bi_fact_yield_curve c JOIN last_day ON c.date = last_day.d\n",
+        "UNION ALL\n",
+        "SELECT 'One year ago', c.tenor_months, c.yield_pct FROM workspace.cfl.bi_fact_yield_curve c JOIN year_ago ON c.date = year_ago.d"
+      ]
+    },
+    {
+      "name": "oil",
+      "displayName": "WTI in USD vs CAD",
+      "queryLines": [
+        "SELECT month, series, value FROM workspace.cfl.bi_mart_macro_monthly LATERAL VIEW stack(2, 'WTI (USD)', wti_usd, 'WTI (CAD)', wti_cad) s AS series, value WHERE month >= DATE'2020-01-01' AND value IS NOT NULL"
+      ]
+    },
+    {
+      "name": "passthrough",
+      "displayName": "Energy to core pass-through",
+      "queryLines": [
+        "SELECT lag_months, round(corr_core, 3) AS corr_core FROM workspace.cfl.bi_mart_energy_passthrough"
+      ]
+    },
+    {
+      "name": "tariffs",
+      "displayName": "Effective US tariff rates",
+      "queryLines": [
+        "SELECT month, series, value FROM workspace.cfl.bi_mart_macro_monthly LATERAL VIEW stack(3, 'Canada', us_tariff_rate_on_canada, 'Mexico', us_tariff_rate_on_mexico, 'China', us_tariff_rate_on_china) s AS series, value WHERE month >= DATE'2023-01-01' AND value IS NOT NULL"
+      ]
+    },
+    {
+      "name": "mortgage",
+      "displayName": "Mortgage renewal shock",
+      "queryLines": [
+        "SELECT month, series, value FROM workspace.cfl.bi_mart_macro_monthly LATERAL VIEW stack(2, 'Rate today', mortgage_5y, 'Rate signed 5 years earlier', mortgage_5y_at_origination) s AS series, value WHERE month >= DATE'2015-01-01' AND value IS NOT NULL"
+      ]
+    },
+    {
+      "name": "freshness_status",
+      "displayName": "Freshness status",
+      "queryLines": [
+        "SELECT status, count(*) AS series FROM workspace.cfl.freshness_report GROUP BY status"
+      ]
+    },
+    {
+      "name": "freshness_late",
+      "displayName": "Late or missing series",
+      "queryLines": [
+        "SELECT name, source, frequency, CAST(last_date AS STRING) AS last_date, age_days, max_age_days FROM workspace.cfl.freshness_report WHERE status IN ('late', 'missing') ORDER BY age_days DESC"
+      ]
+    },
+    {
+      "name": "ingestion",
+      "displayName": "Ingestion activity (30 days)",
+      "queryLines": [
+        "SELECT to_date(ingested_at) AS day,\n",
+        "  CASE WHEN status = 'error' THEN 'error' WHEN changed THEN 'new data' ELSE 'unchanged' END AS outcome,\n",
+        "  count(*) AS series\n",
+        "FROM workspace.cfl.bronze_ingestion_log\n",
+        "WHERE to_date(ingested_at) >= date_sub(current_date(), 30)\n",
+        "GROUP BY ALL"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "policy",
+      "displayName": "Policy monitor",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Canadian Financial Lakehouse — policy monitor\n",
+                "Bank of Canada, Statistics Canada, FRED and US Census data, refreshed daily by the `cfl-daily-refresh` job. Values at reference dates."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_policy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "policy_rate",
+                      "expression": "`policy_rate`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "policy_rate",
+                  "displayName": "Policy rate (%)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Policy rate (%)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_headline",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "headline_cpi",
+                      "expression": "`headline_cpi`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "headline_cpi",
+                  "displayName": "Headline CPI (y/y %)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Headline CPI (y/y %)"
+              }
+            }
+          },
+          "position": {
+            "x": 1,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_core",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "core_inflation",
+                      "expression": "`core_inflation`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "core_inflation",
+                  "displayName": "Core inflation (%)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Core inflation (%)"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_stance",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "net_stance",
+                      "expression": "`net_stance`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "net_stance",
+                  "displayName": "Net stance (+ hawkish)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Net stance (+ hawkish)"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_decision",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "days_to_decision",
+                      "expression": "`days_to_decision`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "days_to_decision",
+                  "displayName": "Days to next decision"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Days to next decision"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_fresh",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpis",
+                  "fields": [
+                    {
+                      "name": "fresh_pct",
+                      "expression": "`fresh_pct`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "fresh_pct",
+                  "displayName": "Series up to date (%)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Series up to date (%)"
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_taylor",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "taylor",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "value",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "%"
+                },
+                "color": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Policy rate vs Taylor rule (%)",
+                "showDescription": true,
+                "description": "Policy below the rule = room to hike. 2020: effective lower bound; 2021–22: inflation judged transitory."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 4,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "table_signals",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "signals",
+                  "fields": [
+                    {
+                      "name": "indicator",
+                      "expression": "`indicator`"
+                    },
+                    {
+                      "name": "latest_value",
+                      "expression": "`latest_value`"
+                    },
+                    {
+                      "name": "unit",
+                      "expression": "`unit`"
+                    },
+                    {
+                      "name": "signal_label",
+                      "expression": "`signal_label`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "indicator",
+                    "displayName": "Indicator",
+                    "title": "Indicator",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "latest_value",
+                    "displayName": "Latest",
+                    "title": "Latest",
+                    "type": "number",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "unit",
+                    "displayName": "Unit",
+                    "title": "Unit",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "signal_label",
+                    "displayName": "Signal",
+                    "title": "Signal",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100003
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Hawkish / dovish scorecard"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 5,
+            "width": 2,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_inflation",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "inflation",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "value",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "%"
+                },
+                "color": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Inflation vs the 1–3 % band"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_curve",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "curve",
+                  "fields": [
+                    {
+                      "name": "tenor_months",
+                      "expression": "`tenor_months`"
+                    },
+                    {
+                      "name": "yield_pct",
+                      "expression": "`yield_pct`"
+                    },
+                    {
+                      "name": "curve",
+                      "expression": "`curve`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "tenor_months",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Tenor (months)"
+                },
+                "y": {
+                  "fieldName": "yield_pct",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Yield (%)"
+                },
+                "color": {
+                  "fieldName": "curve",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "curve"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Yield curve: today vs one year ago"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 12,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_oil",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "oil",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "value",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "$ per barrel"
+                },
+                "color": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "WTI in USD vs CAD",
+                "showDescription": true,
+                "description": "The gap between the two lines is the exchange-rate effect for Canadians."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_passthrough",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "passthrough",
+                  "fields": [
+                    {
+                      "name": "lag_months",
+                      "expression": "`lag_months`"
+                    },
+                    {
+                      "name": "corr_core",
+                      "expression": "`corr_core`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "lag_months",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Lag (months)"
+                },
+                "y": {
+                  "fieldName": "corr_core",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Correlation"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Energy → core inflation: correlation by lag",
+                "showDescription": true,
+                "description": "The peak is the pass-through delay."
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 18,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_tariffs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "tariffs",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "value",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Duties / imports (%)"
+                },
+                "color": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Effective US tariff rate (%)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_mortgage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mortgage",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Month"
+                },
+                "y": {
+                  "fieldName": "value",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Posted 5-year rate (%)"
+                },
+                "color": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Mortgage renewal shock (%)"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 24,
+            "width": 3,
+            "height": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "operations",
+      "displayName": "Data operations",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "ops_title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Data operations\n",
+                "Freshness of each series against its publication calendar, and what every daily run downloaded."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_freshness",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "freshness_status",
+                  "fields": [
+                    {
+                      "name": "status",
+                      "expression": "`status`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "status",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Status"
+                },
+                "y": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Series"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Series by freshness status"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "table_late",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "freshness_late",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "source",
+                      "expression": "`source`"
+                    },
+                    {
+                      "name": "frequency",
+                      "expression": "`frequency`"
+                    },
+                    {
+                      "name": "last_date",
+                      "expression": "`last_date`"
+                    },
+                    {
+                      "name": "age_days",
+                      "expression": "`age_days`"
+                    },
+                    {
+                      "name": "max_age_days",
+                      "expression": "`max_age_days`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "name",
+                    "displayName": "Series",
+                    "title": "Series",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "source",
+                    "displayName": "Source",
+                    "title": "Source",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "frequency",
+                    "displayName": "Freq.",
+                    "title": "Freq.",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "last_date",
+                    "displayName": "Last observation",
+                    "title": "Last observation",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100003
+                  },
+                  {
+                    "fieldName": "age_days",
+                    "displayName": "Age (days)",
+                    "title": "Age (days)",
+                    "type": "number",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100004
+                  },
+                  {
+                    "fieldName": "max_age_days",
+                    "displayName": "Max age",
+                    "title": "Max age",
+                    "type": "number",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100005
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Late or missing series"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_ingestion",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ingestion",
+                  "fields": [
+                    {
+                      "name": "day",
+                      "expression": "`day`"
+                    },
+                    {
+                      "name": "series",
+                      "expression": "`series`"
+                    },
+                    {
+                      "name": "outcome",
+                      "expression": "`outcome`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "day",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Day"
+                },
+                "y": {
+                  "fieldName": "series",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Series"
+                },
+                "color": {
+                  "fieldName": "outcome",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "outcome"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Ingestion activity — last 30 days",
+                "showDescription": true,
+                "description": "'unchanged' = the source published nothing new (SHA-256 identical), so Silver and Gold were skipped."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ]
+    }
+  ]
+}

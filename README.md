@@ -120,6 +120,10 @@ Catalog comments, and every run is a new Delta version. Setup: [`docs/databricks
 databricks bundle deploy -t prod && databricks bundle run cfl_daily_refresh -t prod
 ```
 
+The bundle also deploys an **AI/BI dashboard** (policy monitor + data operations), defined as code in
+[`dashboards/build_dashboard.py`](dashboards/build_dashboard.py), and an analysis notebook with one
+question per cell ([`databricks/notebooks/05_analysis_charts.sql`](databricks/notebooks/05_analysis_charts.sql)).
+
 ## Repository layout
 
 ```
@@ -131,8 +135,9 @@ src/cfl/                     pipeline package (CLI: `cfl`)
   storage.py                               Delta tables (delta-rs)
   bi.py                                    Power BI star schema (marts at reference dates)
   cli.py  databricks.py                    CLI; Unity Catalog publishing helpers
-databricks/notebooks/        Databricks job tasks (01 Bronze, 01b audit, 02 Silver, 03 Gold) + examples/
-databricks.yml               Databricks Asset Bundle (schema, volume, daily job)
+databricks/notebooks/        Databricks job tasks (01 Bronze, 01b audit, 02 Silver, 03–04 Gold), 05 analysis + examples/
+databricks.yml               Databricks Asset Bundle (schema, volume, daily job, dashboard)
+dashboards/                  AI/BI dashboard generated from Python (build_dashboard.py → .lvdash.json)
 powerbi/                     DAX measures, theme, report build guide
 tests/                       offline tests on recorded-format payloads
 notebooks/
