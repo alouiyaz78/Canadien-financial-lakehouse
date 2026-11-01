@@ -133,6 +133,33 @@ class Page:
             },
         )
 
+    def qa(self, items: list[tuple[str, str]]) -> None:
+        """Plain-language questions and answers under the charts, one box per question."""
+        width = (1845 - 2 * 18) / len(items)
+        for i, (question, answer) in enumerate(items):
+            paragraphs = [
+                {
+                    "textRuns": [
+                        {"value": question, "textStyle": {"fontWeight": "bold", "fontSize": "12pt", "color": "#0B2545"}}
+                    ]
+                },
+                {"textRuns": [{"value": answer, "textStyle": {"fontSize": "11pt", "color": "#33415C"}}]},
+            ]
+            self.add(
+                f"qa{i}",
+                (47 + i * (width + 18), 895, width, 170),
+                {
+                    "visualType": "textbox",
+                    "objects": {"general": [{"properties": {"paragraphs": paragraphs}}]},
+                    "visualContainerObjects": {
+                        **title_objects(None),
+                        "background": [
+                            {"properties": {"show": lit("true"), "color": {"solid": {"color": lit("'#FFFFFF'")}}}}
+                        ],
+                    },
+                },
+            )
+
     def kpis(self, fields: list[dict]) -> None:
         self.add(
             "kpis",
@@ -315,7 +342,7 @@ def dump(path: Path, obj: dict) -> None:
 
 # ------------------------------------------------------------------ pages
 
-LEFT, RIGHT = (47, 320, 1100, 740), (1165, 320, 727, 740)
+LEFT, RIGHT = (47, 320, 1100, 560), (1165, 320, 727, 560)
 
 
 def signals_page() -> Page:
@@ -359,6 +386,22 @@ def signals_page() -> Page:
         sort=column("bi_mart_policy_signals", "indicator"),
         cell_color=(signal_label["queryRef"], "Signal Color"),
     )
+    p.qa(
+        [
+            (
+                "What is inflation?",
+                "How fast consumer prices rise over 12 months. The Bank of Canada aims for 2 %, inside a 1–3 % band.",
+            ),
+            (
+                "Why several inflation lines?",
+                "Headline CPI includes volatile prices such as gasoline. CPI-trim and CPI-median remove extreme price moves to show the underlying trend the Bank watches.",
+            ),
+            (
+                "How do I read the scorecard?",
+                "Each indicator votes: red argues for a rate hike, green for a cut, grey is neutral. Hikes minus cuts gives the net policy stance.",
+            ),
+        ]
+    )
     return p
 
 
@@ -377,7 +420,7 @@ def oil_page() -> Page:
     )
     p.line(
         "wti",
-        (47, 320, 920, 740),
+        (47, 320, 920, 560),
         [measure("WTI (USD)"), measure("WTI (CAD)")],
         "WTI crude, US$ vs C$ per barrel",
         "C$ price = US$ price × USD/CAD: the gap moves with the exchange rate.",
@@ -385,7 +428,7 @@ def oil_page() -> Page:
     )
     p.columns(
         "passthrough",
-        (985, 320, 907, 430),
+        (985, 320, 907, 320),
         column("bi_mart_energy_passthrough", "lag_months", "Lag (months)"),
         [total("bi_mart_energy_passthrough", "corr_core", "Correlation with core")],
         "Energy → core inflation: correlation by lag",
@@ -393,12 +436,28 @@ def oil_page() -> Page:
     )
     p.columns(
         "fx_effect",
-        (985, 770, 907, 290),
+        (985, 650, 907, 230),
         column(*DATE),
         [measure("FX Effect on Oil (pts)", "FX effect (pts)")],
         "Exchange-rate effect on oil (pts)",
         "> 0: a weaker loonie amplified the shock; < 0: it cushioned it.",
         start="2022-01-01",
+    )
+    p.qa(
+        [
+            (
+                "Why two oil prices?",
+                "Oil is priced in US dollars, but Canadians pay in Canadian dollars: C$ price = US$ price × exchange rate.",
+            ),
+            (
+                "What is the exchange-rate effect?",
+                "Bars above zero: a weaker loonie made the oil shock worse for Canadians. Below zero: a stronger loonie softened it.",
+            ),
+            (
+                "What is the pass-through delay?",
+                "Energy costs reach other prices (transport, food, services) slowly. Historically the link with core inflation peaks about a year later.",
+            ),
+        ]
     )
     return p
 
@@ -413,7 +472,7 @@ def tariffs_page() -> Page:
             measure("Latest Tariff on China (%)", "China (%)"),
             measure("Latest Canada Advantage vs China (pts)", "Canada's advantage vs China (pts)"),
             measure("Latest US Import Prices from Canada (y/y %)", "US import prices from Canada (y/y %)"),
-            measure("Latest Trade Policy Uncertainty", "Trade policy uncertainty"),
+            measure("Trade Uncertainty vs Normal", "Trade uncertainty"),
         ]
     )
     p.line(
@@ -430,17 +489,33 @@ def tariffs_page() -> Page:
     )
     p.line(
         "uncertainty",
-        (1165, 320, 727, 500),
+        (1165, 320, 727, 400),
         [measure("Trade Policy Uncertainty")],
-        "Trade-policy uncertainty index",
-        "Uncertainty delays investment even when tariffs paid stay low.",
+        "Trade-policy uncertainty (100 = normal level)",
+        "Newspaper-based index: 1,000 = ten times the usual level. Uncertainty delays investment even when tariffs paid stay low.",
         start="2023-01-01",
     )
     p.card(
         "absorption",
-        (1165, 840, 727, 220),
+        (1165, 730, 727, 150),
         measure("Exporter Absorption Reading", "Are Canadian exporters absorbing tariffs?"),
         size="16D",
+    )
+    p.qa(
+        [
+            (
+                "What is the effective tariff?",
+                "Duties actually paid divided by the value of goods the US imports — not the rate announced in the news.",
+            ),
+            (
+                "Why is Canada's rate so low?",
+                "Goods that meet CUSMA rules of origin are exempt, so most exports still enter duty-free. Steel, aluminium, autos and lumber pay the most.",
+            ),
+            (
+                "What does the uncertainty index measure?",
+                "How often US newspapers write about uncertain trade policy. 100 = normal, 1,000 = ten times normal. Uncertainty delays business investment.",
+            ),
+        ]
     )
     return p
 
@@ -470,12 +545,28 @@ def mortgage_page() -> Page:
         start="2015-01-01",
         y_range=(4, 8),
     )
-    p.slicer("amount", (1165, 320, 727, 180), "Mortgage amount")
-    p.slicer("amortization", (1165, 510, 727, 180), "Amortization years")
+    p.slicer("amount", (1165, 320, 727, 150), "Mortgage amount")
+    p.slicer("amortization", (1165, 480, 727, 150), "Amortization years")
     p.card(
-        "shock_month", (1165, 700, 360, 360), measure("Monthly Payment Shock ($)", "Extra per month ($)"), size="28D"
+        "shock_month", (1165, 640, 360, 240), measure("Monthly Payment Shock ($)", "Extra per month ($)"), size="28D"
     )
-    p.card("shock_year", (1532, 700, 360, 360), measure("Annual Payment Shock ($)", "Extra per year ($)"), size="28D")
+    p.card("shock_year", (1532, 640, 360, 240), measure("Annual Payment Shock ($)", "Extra per year ($)"), size="28D")
+    p.qa(
+        [
+            (
+                "What is a mortgage renewal?",
+                "In Canada the rate is fixed for a term (usually 5 years) inside a 25-year loan. At the end of the term the household signs again at the new market rate.",
+            ),
+            (
+                "How do I read the chart?",
+                "When the rate today is above the rate signed five years earlier, households that renew now pay more every month.",
+            ),
+            (
+                "How do I use the simulator?",
+                "Pick a loan amount and an amortization: the cards show the payment before and after renewal. Posted rates are above negotiated ones, so focus on the change.",
+            ),
+        ]
+    )
     return p
 
 
@@ -523,7 +614,73 @@ def health_page() -> Page:
         sort=when,
         direction="Descending",
     )
+    p.qa(
+        [
+            (
+                "What is freshness?",
+                "Each series has an expected publication rhythm. It is 'late' when its last value is older than that rhythm allows.",
+            ),
+            (
+                "What is an ingestion run?",
+                "The daily job that downloads every series. A new copy is stored only when the source published something new.",
+            ),
+            (
+                "Why do errors appear?",
+                "A source can be briefly unavailable. The job retries, the other series continue, and the error is logged here.",
+            ),
+        ]
+    )
     return p
+
+
+POLICY_QA = [
+    (
+        "What is the policy rate?",
+        "The overnight rate set by the Bank of Canada eight times a year. It drives the rates banks charge on loans and mortgages.",
+    ),
+    (
+        "What is the Taylor rule?",
+        "A simple benchmark: the rate rises when inflation is above 2 % and falls when unemployment is high. The Bank uses it as a cross-check, not a formula.",
+    ),
+    (
+        "Why does the policy rate leave the rule?",
+        "2020: rates cannot go much below zero. 2021–22: inflation was judged temporary. The Bank also weighs oil, trade and household debt.",
+    ),
+]
+
+
+def add_policy_qa() -> None:
+    """Page 1 is built by hand: shrink its lower visuals to make room, then add the Q&A strip."""
+    folder = next(
+        p
+        for p in PAGES.iterdir()
+        if p.is_dir() and json.loads((p / "page.json").read_text(encoding="utf-8"))["displayName"] == "Policy Monitor"
+    )
+    page = Page("policy", "Policy Monitor")
+    page.qa(POLICY_QA)
+    qa_names = {v["name"] for v in page.visuals}
+    top, new_bottom = 358.0, 880.0
+    paths = [p for p in folder.glob("visuals/*/visual.json") if p.parent.name not in qa_names]
+    visuals = {p: json.loads(p.read_text(encoding="utf-8")) for p in paths}
+    old_bottom = max(v["position"]["y"] + v["position"]["height"] for v in visuals.values())
+    if old_bottom <= new_bottom + 1:  # already done: keep the script idempotent
+        old_bottom = new_bottom
+    for path in folder.glob("visuals/*/visual.json"):
+        visual = json.loads(path.read_text(encoding="utf-8"))
+        if visual["name"] in qa_names:
+            continue
+        pos = visual["position"]
+        if pos["y"] >= top - 1:
+            scale = (new_bottom - top) / (old_bottom - top)
+            y0, y1 = pos["y"], min(pos["y"] + pos["height"], old_bottom)
+            pos["y"] = top + (y0 - top) * scale
+            pos["height"] = (y1 - y0) * scale
+            dump(path, visual)
+    for v in page.visuals:
+        v["position"]["z"] += 100
+        v["position"]["tabOrder"] += 100
+        (folder / "visuals" / v["name"]).mkdir(parents=True, exist_ok=True)
+        dump(folder / "visuals" / v["name"] / "visual.json", v)
 
 
 def reset_sliders() -> None:
@@ -550,6 +707,7 @@ def main() -> None:
     meta["pageOrder"] = manual + generated
     dump(meta_path, meta)
     reset_sliders()
+    add_policy_qa()
     print(f"{len(pages)} pages written: " + ", ".join(p.display for p in pages))
 
 

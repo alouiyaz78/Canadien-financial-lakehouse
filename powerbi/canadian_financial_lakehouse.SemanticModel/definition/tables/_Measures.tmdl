@@ -456,6 +456,7 @@ table _Measures
 			RETURN CALCULATE ( AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] ), bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 		formatString: 0.00
 		displayFolder: Trade
+		lineageTag: 5664cee6-fa11-45e5-b855-d91dda483d00
 
 	measure 'Latest Tariff on China (%)' =
 			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_tariff_rate_on_china] ), REMOVEFILTERS ( bi_dim_date ) )
@@ -540,6 +541,12 @@ table _Measures
 			RETURN CALCULATE ( [FX Effect on Oil (pts)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 		formatString: 0.00
 		displayFolder: Energy
+
+	/// The raw index (100 = normal) is hard to read: show it as a multiple of the normal level
+	measure 'Trade Uncertainty vs Normal' =
+			VAR U = [Latest Trade Policy Uncertainty]
+			RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
+		displayFolder: Trade
 
 	column 'Colonne 1'
 		dataType: string

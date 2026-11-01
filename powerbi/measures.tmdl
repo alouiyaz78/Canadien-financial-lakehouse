@@ -471,3 +471,9 @@ createOrReplace
 				RETURN CALCULATE ( [FX Effect on Oil (pts)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 			formatString: 0.00
 			displayFolder: Energy
+
+		/// The raw index (100 = normal) is hard to read: show it as a multiple of the normal level
+		measure 'Trade Uncertainty vs Normal' =
+				VAR U = [Latest Trade Policy Uncertainty]
+				RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
+			displayFolder: Trade

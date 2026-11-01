@@ -98,12 +98,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Latest Trade Policy Uncertainty"
+                  "Property": "Trade Uncertainty vs Normal"
                 }
               },
-              "queryRef": "_Measures.Latest Trade Policy Uncertainty",
-              "nativeQueryRef": "Trade policy uncertainty",
-              "displayName": "Trade policy uncertainty"
+              "queryRef": "_Measures.Trade Uncertainty vs Normal",
+              "nativeQueryRef": "Trade uncertainty",
+              "displayName": "Trade uncertainty"
             }
           ]
         }

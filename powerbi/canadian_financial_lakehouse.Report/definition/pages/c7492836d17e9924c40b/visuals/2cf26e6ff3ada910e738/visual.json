@@ -5,7 +5,7 @@
     "x": 1165,
     "y": 320,
     "z": 3,
-    "height": 500,
+    "height": 400,
     "width": 727,
     "tabOrder": 3
   },
@@ -113,7 +113,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Trade-policy uncertainty index'"
+                  "Value": "'Trade-policy uncertainty (100 = normal level)'"
                 }
               }
             }
@@ -133,7 +133,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Uncertainty delays investment even when tariffs paid stay low.'"
+                  "Value": "'Newspaper-based index: 1,000 = ten times the usual level. Uncertainty delays investment even when tariffs paid stay low.'"
                 }
               }
             }

@@ -341,3 +341,9 @@ RETURN CALCULATE ( AVERAGE ( bi_mart_macro_monthly[bos_firms_infl_above_3] ), bi
 Latest FX Effect on Oil (pts) =
 VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[wti_cad_yoy] ), REMOVEFILTERS ( bi_dim_date ) )
 RETURN CALCULATE ( [FX Effect on Oil (pts)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
+
+// Folder: Trade
+// The raw index (100 = normal) is hard to read: show it as a multiple of the normal level
+Trade Uncertainty vs Normal =
+VAR U = [Latest Trade Policy Uncertainty]
+RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
