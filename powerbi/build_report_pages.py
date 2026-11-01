@@ -331,6 +331,11 @@ class Page:
         )
 
     def write(self) -> None:
+        if self.key != "overview":
+            for v in self.visuals:
+                if v["key"] == "title":  # leave room for the back button on the right of the headline
+                    v["position"]["width"] = BACK_POS[0] - 47 - 20
+            self.add("back", BACK_POS, back_button_visual())
         for v in self.visuals:
             help_text = HELP.get((self.key, v["key"]))
             if help_text:
@@ -739,6 +744,75 @@ HELP: dict[tuple[str, str], str] = {
 }
 
 
+OVERVIEW = hashlib.sha1(b"overview").hexdigest()[:20]  # page name of Overview (see Page.__init__)
+BACK_POS = (1652, 22, 240, 60)
+
+
+def back_button_visual() -> dict:
+    """Navy "← Overview" button that jumps back to the main page (Ctrl+click in Desktop, plain click online)."""
+    default = {"id": "default"}
+    return {
+        "visualType": "actionButton",
+        "objects": {
+            "icon": [
+                {"properties": {"shapeType": text("back"), "lineColor": {"solid": {"color": text("#FFFFFF")}}},
+                 "selector": default}
+            ],
+            "text": [
+                {
+                    "properties": {
+                        "show": lit("true"),
+                        "text": text("Overview"),
+                        "fontColor": {"solid": {"color": text("#FFFFFF")}},
+                        "fontSize": lit("14D"),
+                        "bold": lit("true"),
+                    },
+                    "selector": default,
+                }
+            ],
+            "fill": [
+                {
+                    "properties": {
+                        "show": lit("true"),
+                        "fillColor": {"solid": {"color": text("#0B2545")}},
+                        "transparency": lit("0D"),
+                    },
+                    "selector": default,
+                }
+            ],
+        },
+        "visualContainerObjects": {
+            "visualLink": [
+                {
+                    "properties": {
+                        "show": lit("true"),
+                        "type": text("PageNavigation"),
+                        "navigationSection": text(OVERVIEW),
+                        "tooltip": text("Back to the overview page"),
+                    }
+                }
+            ],
+            "title": [{"properties": {"show": lit("false")}}],
+        },
+    }
+
+
+def add_back_button_to_policy_page(folder: Path) -> None:
+    name = hashlib.sha1(b"policy/back").hexdigest()[:20]
+    target = folder / "visuals" / name
+    target.mkdir(parents=True, exist_ok=True)
+    x, y, w, h = BACK_POS
+    dump(
+        target / "visual.json",
+        {
+            "$schema": SCHEMA_VISUAL,
+            "name": name,
+            "position": {"x": x, "y": y, "z": 100, "height": h, "width": w, "tabOrder": 100},
+            "visual": {**back_button_visual(), "drillFilterOtherVisuals": True},
+        },
+    )
+
+
 def add_help(visual: dict, help_text: str) -> None:
     """Show a "?" in the visual header whose tooltip is ``help_text`` (Power BI: General → Header icons)."""
     objects = visual["visual"].setdefault("visualContainerObjects", {})
@@ -775,9 +849,10 @@ def fix_policy_page() -> None:
         elif kind == "cardVisual":
             add_help(visual, HELP[("policy", "kpis" if pos["y"] < top else "reading")])
         dump(path, visual)
+    add_back_button_to_policy_page(folder)
 
 
-BACKGROUND = "cfl_background.png"  # drawn by make_background.py
+BACKGROUND ="cfl_background.png"  # drawn by make_background.py
 
 
 def apply_background() -> None:
@@ -809,16 +884,58 @@ def apply_background() -> None:
         dump(path, page)
 
 
+# What-if parameters: default value (same as the SELECTEDVALUE fallback in the model) and its DAX literal.
+SLIDER_DEFAULTS = {
+    "Neutral real rate": "0.75D",
+    "Inflation weight": "0.5D",
+    "Slack weight": "0.5D",
+    "Mortgage amount": "500000L",
+    "Amortization years": "25L",
+}
+
+
 def reset_sliders() -> None:
-    """Drop the slider positions saved on page 1, so the what-if defaults (0.75 / 0.5 / 0.5) apply."""
+    """Put every what-if slider on its default value, so the slider shows the number the measures use."""
     for path in PAGES.glob("*/visuals/*/visual.json"):
         visual = json.loads(path.read_text(encoding="utf-8-sig"))
-        objects = visual.get("visual", {}).get("objects", {})
         if visual["visual"].get("visualType") != "slicer":
             continue
-        objects.pop("general", None)
-        for entry in objects.get("data", []):
-            entry.get("properties", {}).pop("numericStart", None)
+        objects = visual["visual"].setdefault("objects", {})
+        entity = visual["visual"]["query"]["queryState"]["Values"]["projections"][0]["field"]["Column"]["Property"]
+        value = SLIDER_DEFAULTS.get(entity)
+        if value is None:
+            continue
+        for entry in objects.setdefault("data", [{"properties": {}}]):
+            entry.setdefault("properties", {})["numericStart"] = lit(value)
+        alias = entity[0].lower()
+        objects["general"] = [
+            {
+                "properties": {
+                    "filter": {
+                        "filter": {
+                            "Version": 2,
+                            "From": [{"Name": alias, "Entity": entity, "Type": 0}],
+                            "Where": [
+                                {
+                                    "Condition": {
+                                        "Comparison": {
+                                            "ComparisonKind": 0,
+                                            "Left": {
+                                                "Column": {
+                                                    "Expression": {"SourceRef": {"Source": alias}},
+                                                    "Property": entity,
+                                                }
+                                            },
+                                            "Right": {"Literal": {"Value": value}},
+                                        }
+                                    }
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        ]
         dump(path, visual)
 
 
