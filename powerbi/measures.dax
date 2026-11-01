@@ -347,3 +347,10 @@ RETURN CALCULATE ( [FX Effect on Oil (pts)], bi_mart_macro_monthly[month] = M, R
 Trade Uncertainty vs Normal =
 VAR U = [Latest Trade Policy Uncertainty]
 RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
+
+// Folder: Mortgage
+// Text versions for the cards: Power BI's new card would otherwise shorten 2,850 to "3K"
+Payment Before (text) = FORMAT ( [Payment at Origination], "$#,0" )
+Payment After (text) = FORMAT ( [Payment at Renewal], "$#,0" )
+Extra per Month (text) = FORMAT ( [Monthly Payment Shock ($)], "+$#,0;-$#,0" )
+Extra per Year (text) = FORMAT ( [Annual Payment Shock ($)], "+$#,0;-$#,0" )

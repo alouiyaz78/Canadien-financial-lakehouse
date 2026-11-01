@@ -477,3 +477,20 @@ createOrReplace
 				VAR U = [Latest Trade Policy Uncertainty]
 				RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
 			displayFolder: Trade
+
+		/// Text versions for the cards: Power BI's new card would otherwise shorten 2,850 to "3K"
+		measure 'Payment Before (text)' = FORMAT ( [Payment at Origination], "$#,0" )
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Payment After (text)' = FORMAT ( [Payment at Renewal], "$#,0" )
+			formatString: \$#,0
+			displayFolder: Mortgage
+
+		measure 'Extra per Month (text)' = FORMAT ( [Monthly Payment Shock ($)], "+$#,0;-$#,0" )
+			formatString: 0.00
+			displayFolder: Mortgage
+
+		measure 'Extra per Year (text)' = FORMAT ( [Annual Payment Shock ($)], "+$#,0;-$#,0" )
+			formatString: 0.00
+			displayFolder: Mortgage

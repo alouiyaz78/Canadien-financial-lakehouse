@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Annual Payment Shock ($)"
+                  "Property": "Extra per Year (text)"
                 }
               },
-              "queryRef": "_Measures.Annual Payment Shock ($)",
-              "nativeQueryRef": "Extra per year ($)",
-              "displayName": "Extra per year ($)"
+              "queryRef": "_Measures.Extra per Year (text)",
+              "nativeQueryRef": "Extra per year",
+              "displayName": "Extra per year"
             }
           ]
         }

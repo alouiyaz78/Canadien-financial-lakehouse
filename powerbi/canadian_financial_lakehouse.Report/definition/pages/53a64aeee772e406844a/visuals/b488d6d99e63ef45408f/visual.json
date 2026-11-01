@@ -68,10 +68,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Payment at Origination"
+                  "Property": "Payment Before (text)"
                 }
               },
-              "queryRef": "_Measures.Payment at Origination",
+              "queryRef": "_Measures.Payment Before (text)",
               "nativeQueryRef": "Payment before ($/month)",
               "displayName": "Payment before ($/month)"
             },
@@ -83,10 +83,10 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Payment at Renewal"
+                  "Property": "Payment After (text)"
                 }
               },
-              "queryRef": "_Measures.Payment at Renewal",
+              "queryRef": "_Measures.Payment After (text)",
               "nativeQueryRef": "Payment after ($/month)",
               "displayName": "Payment after ($/month)"
             },

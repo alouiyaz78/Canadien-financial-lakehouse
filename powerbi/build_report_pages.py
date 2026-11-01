@@ -226,8 +226,10 @@ class Page:
             },
         )
 
-    def columns(self, key, pos, category: dict, ys: list[dict], title, subtitle=None, start=None) -> None:
+    def columns(self, key, pos, category: dict, ys: list[dict], title, subtitle=None, start=None, y_range=None) -> None:
         objects = {"categoryAxis": [{"properties": {"fontSize": lit("9D")}}]}
+        if y_range:
+            objects["valueAxis"] = [{"properties": {"start": lit(f"{y_range[0]}D"), "end": lit(f"{y_range[1]}D")}}]
         if start:
             objects["categoryAxis"][0]["properties"]["start"] = lit(f"datetime'{start}T00:00:00'")
         self.add(
@@ -512,6 +514,7 @@ def oil_page() -> Page:
         "Exchange-rate effect on oil (pts)",
         "> 0: a weaker loonie amplified the shock; < 0: it cushioned it.",
         start="2022-01-01",
+        y_range=(-15, 15),
     )
     return p
 
@@ -566,8 +569,8 @@ def mortgage_page() -> Page:
             measure("Latest Mortgage 5Y (%)", "5-year rate today (%)"),
             measure("Latest Rate at Origination (%)", "Rate signed 5 years ago (%)"),
             measure("Latest Renewal Rate Change (pts)", "Change at renewal (pts)"),
-            measure("Payment at Origination", "Payment before ($/month)"),
-            measure("Payment at Renewal", "Payment after ($/month)"),
+            measure("Payment Before (text)", "Payment before ($/month)"),
+            measure("Payment After (text)", "Payment after ($/month)"),
             measure("Monthly Payment Shock (%)", "Payment shock (%)"),
         ]
     )
@@ -585,10 +588,8 @@ def mortgage_page() -> Page:
     )
     p.slicer("amount", (1165, 320, 727, 180), "Mortgage amount")
     p.slicer("amortization", (1165, 510, 727, 180), "Amortization years")
-    p.card(
-        "shock_month", (1165, 700, 360, 360), measure("Monthly Payment Shock ($)", "Extra per month ($)"), size="28D"
-    )
-    p.card("shock_year", (1532, 700, 360, 360), measure("Annual Payment Shock ($)", "Extra per year ($)"), size="28D")
+    p.card("shock_month", (1165, 700, 360, 360), measure("Extra per Month (text)", "Extra per month"), size="28D")
+    p.card("shock_year", (1532, 700, 360, 360), measure("Extra per Year (text)", "Extra per year"), size="28D")
     return p
 
 

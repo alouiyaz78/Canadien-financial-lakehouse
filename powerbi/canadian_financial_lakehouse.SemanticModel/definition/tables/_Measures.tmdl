@@ -134,17 +134,17 @@ table _Measures
 		displayFolder: Inflation
 		lineageTag: 8a3b1f05-f904-493f-9995-8a45cb0e2c32
 
-	measure CPI-trim = AVERAGE ( bi_mart_macro_monthly[cpi_trim] )
+	measure 'CPI-trim' = AVERAGE ( bi_mart_macro_monthly[cpi_trim] )
 		formatString: 0.00
 		displayFolder: Inflation
 		lineageTag: c092ce4d-0c1e-443c-a3cb-6ea6bf6f2ab8
 
-	measure CPI-median = AVERAGE ( bi_mart_macro_monthly[cpi_median] )
+	measure 'CPI-median' = AVERAGE ( bi_mart_macro_monthly[cpi_median] )
 		formatString: 0.00
 		displayFolder: Inflation
 		lineageTag: 3688f8df-b199-488d-ab80-2e1fd53df02b
 
-	measure CPI-common = AVERAGE ( bi_mart_macro_monthly[cpi_common] )
+	measure 'CPI-common' = AVERAGE ( bi_mart_macro_monthly[cpi_common] )
 		formatString: 0.00
 		displayFolder: Inflation
 		lineageTag: d4e794a2-2f8b-429b-a4f3-d1c093b1c37a
@@ -159,7 +159,7 @@ table _Measures
 		displayFolder: Inflation
 		lineageTag: 822b7095-e883-4353-bd05-bb946ff2a0ef
 
-	measure Target = 2
+	measure 'Target' = 2
 		formatString: 0.00
 		displayFolder: Inflation
 		lineageTag: b4d17d6c-c5e3-4460-a11c-95ab72d0460a
@@ -299,7 +299,7 @@ table _Measures
 		displayFolder: Trade
 		lineageTag: 0295cb82-4cfd-4bcd-b747-c87a0a3c1ab0
 
-	measure USD/CAD = AVERAGE ( bi_mart_macro_monthly[usdcad] )
+	measure 'USD/CAD' = AVERAGE ( bi_mart_macro_monthly[usdcad] )
 		formatString: 0.00
 		displayFolder: Trade
 		lineageTag: 50fa8a59-f0de-4ccf-8040-baab75cb9659
@@ -562,6 +562,23 @@ table _Measures
 			RETURN IF ( NOT ISBLANK ( U ), FORMAT ( U / 100, "0" ) & "× normal" )
 		displayFolder: Trade
 		lineageTag: b69a102c-fbfb-4e53-804c-eb4051d131db
+
+	/// Text versions for the cards: Power BI's new card would otherwise shorten 2,850 to "3K"
+	measure 'Payment Before (text)' = FORMAT ( [Payment at Origination], "$#,0" )
+		formatString: \$#,0
+		displayFolder: Mortgage
+
+	measure 'Payment After (text)' = FORMAT ( [Payment at Renewal], "$#,0" )
+		formatString: \$#,0
+		displayFolder: Mortgage
+
+	measure 'Extra per Month (text)' = FORMAT ( [Monthly Payment Shock ($)], "+$#,0;-$#,0" )
+		formatString: 0.00
+		displayFolder: Mortgage
+
+	measure 'Extra per Year (text)' = FORMAT ( [Annual Payment Shock ($)], "+$#,0;-$#,0" )
+		formatString: 0.00
+		displayFolder: Mortgage
 
 	column 'Colonne 1'
 		dataType: string

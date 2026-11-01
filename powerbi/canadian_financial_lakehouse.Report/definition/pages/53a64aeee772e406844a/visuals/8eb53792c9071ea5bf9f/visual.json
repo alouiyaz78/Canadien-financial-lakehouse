@@ -23,12 +23,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Monthly Payment Shock ($)"
+                  "Property": "Extra per Month (text)"
                 }
               },
-              "queryRef": "_Measures.Monthly Payment Shock ($)",
-              "nativeQueryRef": "Extra per month ($)",
-              "displayName": "Extra per month ($)"
+              "queryRef": "_Measures.Extra per Month (text)",
+              "nativeQueryRef": "Extra per month",
+              "displayName": "Extra per month"
             }
           ]
         }
