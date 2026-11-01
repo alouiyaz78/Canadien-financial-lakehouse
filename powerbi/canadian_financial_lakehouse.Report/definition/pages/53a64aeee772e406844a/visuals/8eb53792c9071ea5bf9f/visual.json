@@ -3,9 +3,9 @@
   "name": "8eb53792c9071ea5bf9f",
   "position": {
     "x": 1165,
-    "y": 640,
+    "y": 700,
     "z": 5,
-    "height": 240,
+    "height": 360,
     "width": 360,
     "tabOrder": 5
   },
@@ -86,6 +86,13 @@
                   }
                 }
               }
+            },
+            "displayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
             }
           },
           "selector": {
@@ -137,6 +144,32 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Extra monthly payment for a household renewing today, for the amount and amortization chosen.'"
                 }
               }
             }

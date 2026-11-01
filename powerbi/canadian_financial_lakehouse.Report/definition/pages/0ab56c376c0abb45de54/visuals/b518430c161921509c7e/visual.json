@@ -5,7 +5,7 @@
     "x": 1165,
     "y": 320,
     "z": 3,
-    "height": 560,
+    "height": 740,
     "width": 727,
     "tabOrder": 3
   },
@@ -192,6 +192,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'Hawkish / dovish scorecard'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'How do I read the scorecard? Each indicator votes: red argues for a rate hike, green for a cut, grey is neutral. Hikes minus cuts gives the net policy stance.'"
                 }
               }
             }

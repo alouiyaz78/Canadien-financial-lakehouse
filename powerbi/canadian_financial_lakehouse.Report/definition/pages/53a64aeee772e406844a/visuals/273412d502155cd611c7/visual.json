@@ -3,9 +3,9 @@
   "name": "273412d502155cd611c7",
   "position": {
     "x": 1532,
-    "y": 640,
+    "y": 700,
     "z": 6,
-    "height": 240,
+    "height": 360,
     "width": 360,
     "tabOrder": 6
   },
@@ -84,6 +84,13 @@
                       "Percent": 0.2
                     }
                   }
+                }
+              }
+            },
+            "displayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
                 }
               }
             }

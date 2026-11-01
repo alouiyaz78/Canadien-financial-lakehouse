@@ -5,7 +5,7 @@
     "x": 47,
     "y": 320,
     "z": 2,
-    "height": 560,
+    "height": 740,
     "width": 1100,
     "tabOrder": 2
   },
@@ -165,6 +165,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'CUSMA-compliant goods are exempt: most Canadian exports still enter duty-free.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is the effective tariff? Duties actually paid divided by the value of goods the US imports, not the rate announced in the news. Goods that meet CUSMA rules of origin are exempt, so most Canadian exports still enter duty-free.'"
                 }
               }
             }

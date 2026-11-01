@@ -106,6 +106,7 @@ class Page:
         self.visuals.append(
             {
                 "$schema": SCHEMA_VISUAL,
+                "key": key,
                 "name": hashlib.sha1(f"{self.key}/{key}".encode()).hexdigest()[:20],
                 "position": {"x": x, "y": y, "z": n, "height": h, "width": w, "tabOrder": n},
                 "visual": {**visual, "drillFilterOtherVisuals": True},
@@ -132,33 +133,6 @@ class Page:
                 "visualContainerObjects": title_objects(None),
             },
         )
-
-    def qa(self, items: list[tuple[str, str]]) -> None:
-        """Plain-language questions and answers under the charts, one box per question."""
-        width = (1845 - 2 * 18) / len(items)
-        for i, (question, answer) in enumerate(items):
-            paragraphs = [
-                {
-                    "textRuns": [
-                        {"value": question, "textStyle": {"fontWeight": "bold", "fontSize": "12pt", "color": "#0B2545"}}
-                    ]
-                },
-                {"textRuns": [{"value": answer, "textStyle": {"fontSize": "11pt", "color": "#33415C"}}]},
-            ]
-            self.add(
-                f"qa{i}",
-                (47 + i * (width + 18), 895, width, 170),
-                {
-                    "visualType": "textbox",
-                    "objects": {"general": [{"properties": {"paragraphs": paragraphs}}]},
-                    "visualContainerObjects": {
-                        **title_objects(None),
-                        "background": [
-                            {"properties": {"show": lit("true"), "color": {"solid": {"color": lit("'#FFFFFF'")}}}}
-                        ],
-                    },
-                },
-            )
 
     def kpis(self, fields: list[dict]) -> None:
         self.add(
@@ -318,6 +292,10 @@ class Page:
         )
 
     def write(self) -> None:
+        for v in self.visuals:
+            help_text = HELP.get((self.key, v["key"]))
+            if help_text:
+                add_help(v, help_text)
         folder = PAGES / self.name
         if folder.exists():
             shutil.rmtree(folder)
@@ -333,16 +311,16 @@ class Page:
         dump(folder / "page.json", page)
         for v in self.visuals:
             (folder / "visuals" / v["name"]).mkdir()
-            dump(folder / "visuals" / v["name"] / "visual.json", v)
+            dump(folder / "visuals" / v["name"] / "visual.json", {k: val for k, val in v.items() if k != "key"})
 
 
 def dump(path: Path, obj: dict) -> None:
-    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False).replace("\n", "\r\n"), encoding="utf-8", newline="")
 
 
 # ------------------------------------------------------------------ pages
 
-LEFT, RIGHT = (47, 320, 1100, 560), (1165, 320, 727, 560)
+LEFT, RIGHT = (47, 320, 1100, 740), (1165, 320, 727, 740)
 
 
 def signals_page() -> Page:
@@ -386,22 +364,6 @@ def signals_page() -> Page:
         sort=column("bi_mart_policy_signals", "indicator"),
         cell_color=(signal_label["queryRef"], "Signal Color"),
     )
-    p.qa(
-        [
-            (
-                "What is inflation?",
-                "How fast consumer prices rise over 12 months. The Bank of Canada aims for 2 %, inside a 1–3 % band.",
-            ),
-            (
-                "Why several inflation lines?",
-                "Headline CPI includes volatile prices such as gasoline. CPI-trim and CPI-median remove extreme price moves to show the underlying trend the Bank watches.",
-            ),
-            (
-                "How do I read the scorecard?",
-                "Each indicator votes: red argues for a rate hike, green for a cut, grey is neutral. Hikes minus cuts gives the net policy stance.",
-            ),
-        ]
-    )
     return p
 
 
@@ -420,7 +382,7 @@ def oil_page() -> Page:
     )
     p.line(
         "wti",
-        (47, 320, 920, 560),
+        (47, 320, 920, 740),
         [measure("WTI (USD)"), measure("WTI (CAD)")],
         "WTI crude, US$ vs C$ per barrel",
         "C$ price = US$ price × USD/CAD: the gap moves with the exchange rate.",
@@ -428,7 +390,7 @@ def oil_page() -> Page:
     )
     p.columns(
         "passthrough",
-        (985, 320, 907, 320),
+        (985, 320, 907, 430),
         column("bi_mart_energy_passthrough", "lag_months", "Lag (months)"),
         [total("bi_mart_energy_passthrough", "corr_core", "Correlation with core")],
         "Energy → core inflation: correlation by lag",
@@ -436,28 +398,12 @@ def oil_page() -> Page:
     )
     p.columns(
         "fx_effect",
-        (985, 650, 907, 230),
+        (985, 770, 907, 290),
         column(*DATE),
         [measure("FX Effect on Oil (pts)", "FX effect (pts)")],
         "Exchange-rate effect on oil (pts)",
         "> 0: a weaker loonie amplified the shock; < 0: it cushioned it.",
         start="2022-01-01",
-    )
-    p.qa(
-        [
-            (
-                "Why two oil prices?",
-                "Oil is priced in US dollars, but Canadians pay in Canadian dollars: C$ price = US$ price × exchange rate.",
-            ),
-            (
-                "What is the exchange-rate effect?",
-                "Bars above zero: a weaker loonie made the oil shock worse for Canadians. Below zero: a stronger loonie softened it.",
-            ),
-            (
-                "What is the pass-through delay?",
-                "Energy costs reach other prices (transport, food, services) slowly. Historically the link with core inflation peaks about a year later.",
-            ),
-        ]
     )
     return p
 
@@ -489,7 +435,7 @@ def tariffs_page() -> Page:
     )
     p.line(
         "uncertainty",
-        (1165, 320, 727, 400),
+        (1165, 320, 727, 500),
         [measure("Trade Policy Uncertainty")],
         "Trade-policy uncertainty (100 = normal level)",
         "Newspaper-based index: 1,000 = ten times the usual level. Uncertainty delays investment even when tariffs paid stay low.",
@@ -497,25 +443,9 @@ def tariffs_page() -> Page:
     )
     p.card(
         "absorption",
-        (1165, 730, 727, 150),
+        (1165, 840, 727, 220),
         measure("Exporter Absorption Reading", "Are Canadian exporters absorbing tariffs?"),
         size="16D",
-    )
-    p.qa(
-        [
-            (
-                "What is the effective tariff?",
-                "Duties actually paid divided by the value of goods the US imports — not the rate announced in the news.",
-            ),
-            (
-                "Why is Canada's rate so low?",
-                "Goods that meet CUSMA rules of origin are exempt, so most exports still enter duty-free. Steel, aluminium, autos and lumber pay the most.",
-            ),
-            (
-                "What does the uncertainty index measure?",
-                "How often US newspapers write about uncertain trade policy. 100 = normal, 1,000 = ten times normal. Uncertainty delays business investment.",
-            ),
-        ]
     )
     return p
 
@@ -545,28 +475,12 @@ def mortgage_page() -> Page:
         start="2015-01-01",
         y_range=(4, 8),
     )
-    p.slicer("amount", (1165, 320, 727, 150), "Mortgage amount")
-    p.slicer("amortization", (1165, 480, 727, 150), "Amortization years")
+    p.slicer("amount", (1165, 320, 727, 180), "Mortgage amount")
+    p.slicer("amortization", (1165, 510, 727, 180), "Amortization years")
     p.card(
-        "shock_month", (1165, 640, 360, 240), measure("Monthly Payment Shock ($)", "Extra per month ($)"), size="28D"
+        "shock_month", (1165, 700, 360, 360), measure("Monthly Payment Shock ($)", "Extra per month ($)"), size="28D"
     )
-    p.card("shock_year", (1532, 640, 360, 240), measure("Annual Payment Shock ($)", "Extra per year ($)"), size="28D")
-    p.qa(
-        [
-            (
-                "What is a mortgage renewal?",
-                "In Canada the rate is fixed for a term (usually 5 years) inside a 25-year loan. At the end of the term the household signs again at the new market rate.",
-            ),
-            (
-                "How do I read the chart?",
-                "When the rate today is above the rate signed five years earlier, households that renew now pay more every month.",
-            ),
-            (
-                "How do I use the simulator?",
-                "Pick a loan amount and an amortization: the cards show the payment before and after renewal. Posted rates are above negotiated ones, so focus on the change.",
-            ),
-        ]
-    )
+    p.card("shock_year", (1532, 700, 360, 360), measure("Annual Payment Shock ($)", "Extra per year ($)"), size="28D")
     return p
 
 
@@ -614,79 +528,150 @@ def health_page() -> Page:
         sort=when,
         direction="Descending",
     )
-    p.qa(
-        [
-            (
-                "What is freshness?",
-                "Each series has an expected publication rhythm. It is 'late' when its last value is older than that rhythm allows.",
-            ),
-            (
-                "What is an ingestion run?",
-                "The daily job that downloads every series. A new copy is stored only when the source published something new.",
-            ),
-            (
-                "Why do errors appear?",
-                "A source can be briefly unavailable. The job retries, the other series continue, and the error is logged here.",
-            ),
-        ]
-    )
     return p
 
 
-POLICY_QA = [
+# ------------------------------------------------------------------ help ("?" icon in each visual header)
+# Plain-language Q&A for non-specialists: shown when the reader hovers or clicks the "?" of a visual.
+
+HELP: dict[tuple[str, str], str] = {
     (
-        "What is the policy rate?",
-        "The overnight rate set by the Bank of Canada eight times a year. It drives the rates banks charge on loans and mortgages.",
-    ),
+        "policy",
+        "kpis",
+    ): "What is the policy rate? The overnight rate set by the Bank of Canada eight times a year. It drives the rates banks charge on loans and mortgages. Net stance = hawkish minus dovish signals (see Signals & Inflation).",
     (
-        "What is the Taylor rule?",
-        "A simple benchmark: the rate rises when inflation is above 2 % and falls when unemployment is high. The Bank uses it as a cross-check, not a formula.",
-    ),
+        "policy",
+        "taylor",
+    ): "What is the Taylor rule? A benchmark: the rate rises when inflation is above 2 % and falls when unemployment is high. The Bank uses it as a cross-check, not a formula. Big gaps: 2020, rates cannot go much below zero; 2021–22, inflation was judged temporary.",
     (
-        "Why does the policy rate leave the rule?",
-        "2020: rates cannot go much below zero. 2021–22: inflation was judged temporary. The Bank also weighs oil, trade and household debt.",
-    ),
-]
+        "policy",
+        "sliders",
+    ): "What do the sliders change? r* is the real neutral rate, the level that neither stimulates nor slows the economy (Bank estimate about 0.75 %). The weights set how strongly the rule reacts to inflation and to unemployment. No selection = default values.",
+    (
+        "policy",
+        "reading",
+    ): "How is this decided? It compares the policy rate with the rule for the latest month: more than 0.5 point below the rule = room to hike, more than 0.5 above = room to cut.",
+    (
+        "signals",
+        "kpis",
+    ): "Latest published values. Firms expecting > 3 %: share of firms in the Bank's Business Outlook Survey expecting inflation above 3 %, a warning sign that the shock could spread. Market-implied move: 6-month T-bill minus policy rate, in basis points (100 bp = 1 %).",
+    (
+        "signals",
+        "inflation",
+    ): "What is inflation? How fast consumer prices rise over 12 months. The Bank targets 2 %, inside a 1–3 % band. Headline CPI includes volatile prices such as gasoline; CPI-trim and CPI-median remove extreme moves to show the underlying trend.",
+    (
+        "signals",
+        "signals",
+    ): "How do I read the scorecard? Each indicator votes: red argues for a rate hike, green for a cut, grey is neutral. Hikes minus cuts gives the net policy stance.",
+    (
+        "oil",
+        "kpis",
+    ): "Headline − core: the part of inflation driven by energy and other volatile prices. Pass-through delay: months until energy prices weigh most on core inflation.",
+    (
+        "oil",
+        "wti",
+    ): "Why two oil prices? Oil is priced in US dollars, but Canadians pay in Canadian dollars: C$ price = US$ price × exchange rate.",
+    (
+        "oil",
+        "passthrough",
+    ): "What is the pass-through delay? Each bar is the correlation between energy prices today and core inflation k months later. The peak, about a year, is how long energy takes to spread to other prices.",
+    (
+        "oil",
+        "fx_effect",
+    ): "What is the exchange-rate effect? 12-month change of oil in C$ minus in US$. Above zero: a weaker loonie made the shock worse for Canadians. Below zero: a stronger loonie softened it.",
+    (
+        "tariffs",
+        "kpis",
+    ): "Effective tariff = duties actually paid / value of goods imported by the US. Canada's advantage = China's rate minus Canada's, in percentage points.",
+    (
+        "tariffs",
+        "tariffs",
+    ): "What is the effective tariff? Duties actually paid divided by the value of goods the US imports, not the rate announced in the news. Goods that meet CUSMA rules of origin are exempt, so most Canadian exports still enter duty-free.",
+    (
+        "tariffs",
+        "uncertainty",
+    ): "What does this index measure? How often US newspapers write about uncertain trade policy. 100 = normal, 1,000 = ten times normal. Uncertainty delays business investment even when tariffs paid stay low.",
+    (
+        "tariffs",
+        "absorption",
+    ): "If US import prices of Canadian goods fall, Canadian exporters are cutting their prices to absorb part of the tariff.",
+    (
+        "mortgage",
+        "kpis",
+    ): "Posted rates are above the rates most borrowers negotiate, so focus on the change at renewal rather than the level.",
+    (
+        "mortgage",
+        "rates",
+    ): "What is a mortgage renewal? In Canada the rate is fixed for a term, usually 5 years, inside a 25-year loan. At the end of the term the household signs again at the market rate. When the rate today is above the rate signed 5 years earlier, renewing costs more.",
+    (
+        "mortgage",
+        "amount",
+    ): "How do I use the simulator? Pick a loan amount and an amortization. No selection = 500,000 $ over 25 years. The cards show the payment before and after renewal.",
+    (
+        "mortgage",
+        "amortization",
+    ): "Amortization: the total length of the loan, in years. Longer amortization = smaller monthly payment.",
+    (
+        "mortgage",
+        "shock_month",
+    ): "Extra monthly payment for a household renewing today, for the amount and amortization chosen.",
+    (
+        "health",
+        "kpis",
+    ): "An ingestion run is the daily job that downloads every series. A new copy is stored only when the source published something new.",
+    (
+        "health",
+        "freshness",
+    ): "What is freshness? Each series has an expected publication rhythm. It is 'late' when its last value is older than that rhythm allows.",
+    (
+        "health",
+        "ingestion",
+    ): "Why do errors appear? A source can be briefly unavailable. The job retries, the other series continue, and the error is logged here.",
+}
 
 
-def add_policy_qa() -> None:
-    """Page 1 is built by hand: shrink its lower visuals to make room, then add the Q&A strip."""
+def add_help(visual: dict, help_text: str) -> None:
+    """Show a "?" in the visual header whose tooltip is ``help_text`` (Power BI: General → Header icons)."""
+    objects = visual["visual"].setdefault("visualContainerObjects", {})
+    objects["visualHeader"] = [{"properties": {"showTooltipButton": lit("true")}}]
+    objects["visualHeaderTooltip"] = [{"properties": {"text": text(help_text)}}]
+
+
+def fix_policy_page() -> None:
+    """Page 1 is built by hand: remove the old Q&A strip, give the visuals their height back, add the "?" help."""
     folder = next(
         p
         for p in PAGES.iterdir()
-        if p.is_dir() and json.loads((p / "page.json").read_text(encoding="utf-8"))["displayName"] == "Policy Monitor"
+        if p.is_dir()
+        and json.loads((p / "page.json").read_text(encoding="utf-8-sig"))["displayName"] == "Policy Monitor"
     )
-    page = Page("policy", "Policy Monitor")
-    page.qa(POLICY_QA)
-    qa_names = {v["name"] for v in page.visuals}
-    top, new_bottom = 358.0, 880.0
-    paths = [p for p in folder.glob("visuals/*/visual.json") if p.parent.name not in qa_names]
-    visuals = {p: json.loads(p.read_text(encoding="utf-8")) for p in paths}
-    old_bottom = max(v["position"]["y"] + v["position"]["height"] for v in visuals.values())
-    if old_bottom <= new_bottom + 1:  # already done: keep the script idempotent
-        old_bottom = new_bottom
-    for path in folder.glob("visuals/*/visual.json"):
-        visual = json.loads(path.read_text(encoding="utf-8"))
-        if visual["name"] in qa_names:
-            continue
-        pos = visual["position"]
-        if pos["y"] >= top - 1:
-            scale = (new_bottom - top) / (old_bottom - top)
-            y0, y1 = pos["y"], min(pos["y"] + pos["height"], old_bottom)
-            pos["y"] = top + (y0 - top) * scale
-            pos["height"] = (y1 - y0) * scale
-            dump(path, visual)
-    for v in page.visuals:
-        v["position"]["z"] += 100
-        v["position"]["tabOrder"] += 100
-        (folder / "visuals" / v["name"]).mkdir(parents=True, exist_ok=True)
-        dump(folder / "visuals" / v["name"] / "visual.json", v)
+    for i in range(3):  # Q&A text boxes written by an earlier version of this script
+        name = hashlib.sha1(f"policy/qa{i}".encode()).hexdigest()[:20]
+        if (folder / "visuals" / name).exists():
+            shutil.rmtree(folder / "visuals" / name)
+    paths = list(folder.glob("visuals/*/visual.json"))
+    visuals = {p: json.loads(p.read_text(encoding="utf-8-sig")) for p in paths}
+    top, bottom = 358.0, 1060.0
+    lowest = max(v["position"]["y"] + v["position"]["height"] for v in visuals.values())
+    for path, visual in visuals.items():
+        pos, kind = visual["position"], visual["visual"]["visualType"]
+        if lowest < bottom - 1 and pos["y"] >= top - 1:
+            scale = (bottom - top) / (lowest - top)
+            pos["y"] = top + (pos["y"] - top) * scale
+            pos["height"] = pos["height"] * scale
+        if kind == "lineChart":
+            add_help(visual, HELP[("policy", "taylor")])
+        elif kind == "slicer":
+            add_help(visual, HELP[("policy", "sliders")])
+        elif kind == "cardVisual":
+            add_help(visual, HELP[("policy", "kpis" if pos["y"] < top else "reading")])
+        dump(path, visual)
 
 
 def reset_sliders() -> None:
     """Drop the slider positions saved on page 1, so the what-if defaults (0.75 / 0.5 / 0.5) apply."""
     for path in PAGES.glob("*/visuals/*/visual.json"):
-        visual = json.loads(path.read_text(encoding="utf-8"))
+        visual = json.loads(path.read_text(encoding="utf-8-sig"))
         objects = visual.get("visual", {}).get("objects", {})
         if visual["visual"].get("visualType") != "slicer":
             continue
@@ -701,13 +686,13 @@ def main() -> None:
     for page in pages:
         page.write()
     meta_path = PAGES / "pages.json"
-    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
     generated = [p.name for p in pages]
     manual = [name for name in meta["pageOrder"] if name not in generated]
     meta["pageOrder"] = manual + generated
     dump(meta_path, meta)
     reset_sliders()
-    add_policy_qa()
+    fix_policy_page()
     print(f"{len(pages)} pages written: " + ", ".join(p.display for p in pages))
 
 

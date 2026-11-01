@@ -5,7 +5,7 @@
     "x": 1165,
     "y": 320,
     "z": 3,
-    "height": 150,
+    "height": 180,
     "width": 727,
     "tabOrder": 3
   },
@@ -69,6 +69,34 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'How do I use the simulator? Pick a loan amount and an amortization. No selection = 500,000 $ over 25 years. The cards show the payment before and after renewal.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

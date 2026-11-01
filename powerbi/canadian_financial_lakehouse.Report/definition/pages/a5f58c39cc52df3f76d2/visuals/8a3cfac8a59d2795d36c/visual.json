@@ -5,7 +5,7 @@
     "x": 985,
     "y": 320,
     "z": 3,
-    "height": 320,
+    "height": 430,
     "width": 907,
     "tabOrder": 3
   },
@@ -127,6 +127,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'The peak is the pass-through delay (since 2000).'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is the pass-through delay? Each bar is the correlation between energy prices today and core inflation k months later. The peak, about a year, is how long energy takes to spread to other prices.'"
                 }
               }
             }

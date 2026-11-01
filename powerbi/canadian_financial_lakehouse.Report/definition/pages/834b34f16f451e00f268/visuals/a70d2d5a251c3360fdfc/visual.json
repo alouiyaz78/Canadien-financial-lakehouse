@@ -5,7 +5,7 @@
     "x": 1165,
     "y": 320,
     "z": 3,
-    "height": 560,
+    "height": 740,
     "width": 727,
     "tabOrder": 3
   },
@@ -151,6 +151,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'Ingestion log (latest first)'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Why do errors appear? A source can be briefly unavailable. The job retries, the other series continue, and the error is logged here.'"
                 }
               }
             }

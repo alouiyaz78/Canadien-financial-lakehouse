@@ -3,9 +3,9 @@
   "name": "8de981754aeb637c3dcb",
   "position": {
     "x": 1165,
-    "y": 480,
+    "y": 510,
     "z": 4,
-    "height": 150,
+    "height": 180,
     "width": 727,
     "tabOrder": 4
   },
@@ -69,6 +69,34 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Amortization: the total length of the loan, in years. Longer amortization = smaller monthly payment.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

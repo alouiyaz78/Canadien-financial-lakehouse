@@ -5,7 +5,7 @@
     "x": 47,
     "y": 320,
     "z": 2,
-    "height": 560,
+    "height": 740,
     "width": 920,
     "tabOrder": 2
   },
@@ -148,6 +148,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'C$ price = US$ price × USD/CAD: the gap moves with the exchange rate.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Why two oil prices? Oil is priced in US dollars, but Canadians pay in Canadian dollars: C$ price = US$ price × exchange rate.'"
                 }
               }
             }

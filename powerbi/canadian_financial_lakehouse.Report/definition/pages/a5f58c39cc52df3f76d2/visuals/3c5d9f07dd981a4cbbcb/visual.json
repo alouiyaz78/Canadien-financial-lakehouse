@@ -3,9 +3,9 @@
   "name": "3c5d9f07dd981a4cbbcb",
   "position": {
     "x": 985,
-    "y": 650,
+    "y": 770,
     "z": 4,
-    "height": 230,
+    "height": 290,
     "width": 907,
     "tabOrder": 4
   },
@@ -128,6 +128,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'> 0: a weaker loonie amplified the shock; < 0: it cushioned it.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is the exchange-rate effect? 12-month change of oil in C$ minus in US$. Above zero: a weaker loonie made the shock worse for Canadians. Below zero: a stronger loonie softened it.'"
                 }
               }
             }

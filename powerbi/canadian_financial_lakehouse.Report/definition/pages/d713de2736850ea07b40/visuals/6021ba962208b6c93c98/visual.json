@@ -3,9 +3,9 @@
   "name": "6021ba962208b6c93c98",
   "position": {
     "x": 1212.4728367587381,
-    "y": 358.23249278526572,
+    "y": 358.3126627112194,
     "z": 3,
-    "height": 134.47616165328196,
+    "height": 180.84725187855162,
     "width": 678.622856394816,
     "tabOrder": 3
   },
@@ -69,6 +69,34 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What do the sliders change? r* is the real neutral rate, the level that neither stimulates nor slows the economy (Bank estimate about 0.75 %). The weights set how strongly the rule reacts to inflation and to unemployment. No selection = default values.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

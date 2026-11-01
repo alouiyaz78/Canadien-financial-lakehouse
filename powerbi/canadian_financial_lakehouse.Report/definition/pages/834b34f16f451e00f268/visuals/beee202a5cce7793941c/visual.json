@@ -5,7 +5,7 @@
     "x": 47,
     "y": 320,
     "z": 2,
-    "height": 560,
+    "height": 740,
     "width": 1100,
     "tabOrder": 2
   },
@@ -199,6 +199,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'Freshness by series'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is freshness? Each series has an expected publication rhythm. It is ''late'' when its last value is older than that rhythm allows.'"
                 }
               }
             }

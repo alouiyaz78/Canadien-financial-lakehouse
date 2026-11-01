@@ -5,7 +5,7 @@
     "x": 47,
     "y": 320,
     "z": 2,
-    "height": 560,
+    "height": 740,
     "width": 1100,
     "tabOrder": 2
   },
@@ -170,6 +170,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'First line above the second = households renew at a higher rate. Canadian terms are 5 years, so hikes reach borrowers with a lag.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is a mortgage renewal? In Canada the rate is fixed for a term, usually 5 years, inside a 25-year loan. At the end of the term the household signs again at the market rate. When the rate today is above the rate signed 5 years earlier, renewing costs more.'"
                 }
               }
             }

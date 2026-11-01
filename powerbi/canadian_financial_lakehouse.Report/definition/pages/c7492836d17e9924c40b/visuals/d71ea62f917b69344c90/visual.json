@@ -3,9 +3,9 @@
   "name": "d71ea62f917b69344c90",
   "position": {
     "x": 1165,
-    "y": 730,
+    "y": 840,
     "z": 4,
-    "height": 150,
+    "height": 220,
     "width": 727,
     "tabOrder": 4
   },
@@ -86,6 +86,13 @@
                   }
                 }
               }
+            },
+            "displayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
             }
           },
           "selector": {
@@ -137,6 +144,32 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'If US import prices of Canadian goods fall, Canadian exporters are cutting their prices to absorb part of the tariff.'"
                 }
               }
             }

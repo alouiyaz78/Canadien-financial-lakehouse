@@ -161,6 +161,13 @@
                   }
                 }
               }
+            },
+            "displayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
             }
           },
           "selector": {
@@ -212,6 +219,32 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Latest published values. Firms expecting > 3 %: share of firms in the Bank''s Business Outlook Survey expecting inflation above 3 %, a warning sign that the shock could spread. Market-implied move: 6-month T-bill minus policy rate, in basis points (100 bp = 1 %).'"
                 }
               }
             }

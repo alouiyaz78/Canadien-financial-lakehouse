@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "b2ea5fc6d7a0d5706d37",
   "position": {
-    "x": 46.840318745348611,
+    "x": 46.84031874534861,
     "y": 100.37211159717559,
     "z": 1,
     "height": 236.43208509556916,
@@ -208,6 +208,32 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is the policy rate? The overnight rate set by the Bank of Canada eight times a year. It drives the rates banks charge on loans and mortgages. Net stance = hawkish minus dovish signals (see Signals & Inflation).'"
                 }
               }
             }
