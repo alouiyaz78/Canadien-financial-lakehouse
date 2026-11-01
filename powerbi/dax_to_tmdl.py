@@ -1,6 +1,6 @@
 """Convert powerbi/measures.dax into a TMDL script that Power BI Desktop applies in one go.
 
-    uv run python powerbi/dax_to_tmdl.py      # writes powerbi/measures.tmdl
+    uv run python powerbi/dax_to_tmdl.py      # writes powerbi/measures.tmdl and syncs the PBIP model
 
 In Power BI Desktop: TMDL view → new tab → paste measures.tmdl → Apply. Every measure lands in the
 table `_Measures` with its display folder, format string and description (the `//` comment above it).
@@ -16,6 +16,7 @@ HERE = Path(__file__).parent
 SOURCE = HERE / "measures.dax"
 TARGET = HERE / "measures.tmdl"
 TABLE = "_Measures"
+MODEL_TABLE = HERE / "canadian_financial_lakehouse.SemanticModel" / "definition" / "tables" / f"{TABLE}.tmdl"
 
 HEADER = re.compile(r"^(?!VAR\b|RETURN\b|//)([A-Za-z0-9][^=]*?) =(?: (.*))?$")
 
@@ -86,10 +87,48 @@ def to_tmdl(measures: list[dict]) -> str:
     return "\n".join(out)
 
 
+def measure_lines(m: dict, indent: int) -> list[str]:
+    t = "\t" * indent
+    out = [f"{t}/// {c}" for c in m["description"]]
+    if len(m["lines"]) == 1:
+        out.append(f"{t}measure {quote(m['name'])} = {m['lines'][0]}")
+    else:
+        out.append(f"{t}measure {quote(m['name'])} =")
+        out += [f"{t}\t\t{line}" for line in m["lines"]]
+    fmt = format_string(m["name"], m["folder"])
+    if fmt:
+        out.append(f"{t}\tformatString: {fmt}")
+    out.append(f"{t}\tdisplayFolder: {m['folder']}")
+    return out
+
+
+def sync_model(measures: list[dict], path: Path = MODEL_TABLE) -> None:
+    """Rewrite the measures of the PBIP model table, keeping lineage tags and the table's column/partition."""
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    tags: dict[str, str] = {}
+    for match in re.finditer(r"^\tmeasure (.+?) =(?:.|\n)*?^\t\tlineageTag: (\S+)", text, re.M):
+        tags[match.group(1).strip("'").replace("''", "'")] = match.group(2)
+    table_tag = re.search(r"^table .+\n\tlineageTag: (\S+)", text, re.M).group(1)
+    tail = text[text.index("\n\tcolumn ") + 1 :]
+    if "\t\tisHidden" not in tail.split("\n\n")[0]:
+        tail = tail.replace("\t\tdataType: string\n", "\t\tdataType: string\n\t\tisHidden\n", 1)
+    out = [f"table {TABLE}", f"\tlineageTag: {table_tag}", ""]
+    for m in measures:
+        out += measure_lines(m, 1)
+        if m["name"] in tags:
+            out.append(f"\t\tlineageTag: {tags[m['name']]}")
+        out.append("")
+    path.write_text("\r\n".join(out + tail.split("\n")), encoding="utf-8", newline="")
+    print(f"{len(measures)} measures synced → {path.relative_to(HERE)}")
+
+
 def main() -> None:
     measures = parse(SOURCE.read_text(encoding="utf-8"))
     TARGET.write_text(to_tmdl(measures), encoding="utf-8")
     print(f"{len(measures)} measures → {TARGET}")
+    sync_model(measures)
 
 
 if __name__ == "__main__":

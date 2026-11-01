@@ -1,0 +1,211 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "beee202a5cce7793941c",
+  "position": {
+    "x": 47,
+    "y": 320,
+    "z": 2,
+    "height": 740,
+    "width": 1100,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "name"
+                }
+              },
+              "queryRef": "freshness_report.name",
+              "nativeQueryRef": "Series",
+              "active": true,
+              "displayName": "Series"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "source"
+                }
+              },
+              "queryRef": "freshness_report.source",
+              "nativeQueryRef": "Source",
+              "active": true,
+              "displayName": "Source"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "frequency"
+                }
+              },
+              "queryRef": "freshness_report.frequency",
+              "nativeQueryRef": "Freq.",
+              "active": true,
+              "displayName": "Freq."
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "status"
+                }
+              },
+              "queryRef": "freshness_report.status",
+              "nativeQueryRef": "Status",
+              "active": true,
+              "displayName": "Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "last_date"
+                }
+              },
+              "queryRef": "freshness_report.last_date",
+              "nativeQueryRef": "Last observation",
+              "active": true,
+              "displayName": "Last observation"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "age_days"
+                }
+              },
+              "queryRef": "freshness_report.age_days",
+              "nativeQueryRef": "Age (days)",
+              "active": true,
+              "displayName": "Age (days)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "freshness_report"
+                    }
+                  },
+                  "Property": "max_age_days"
+                }
+              },
+              "queryRef": "freshness_report.max_age_days",
+              "nativeQueryRef": "Max age (days)",
+              "active": true,
+              "displayName": "Max age (days)"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "freshness_report"
+                  }
+                },
+                "Property": "age_days"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Freshness by series'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

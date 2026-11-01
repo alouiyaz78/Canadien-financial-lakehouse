@@ -3,7 +3,7 @@
   "name": "406c60e5e8049eb20794",
   "position": {
     "x": 1212.4728367587381,
-    "y": 539.27896321508047,
+    "y": 539.2789632150805,
     "z": 4,
     "height": 170.10812933630055,
     "width": 680.4325173452022,
@@ -38,60 +38,11 @@
       "data": [
         {
           "properties": {
-            "numericStart": {
-              "expr": {
-                "Literal": {
-                  "Value": "0D"
-                }
-              }
-            },
             "mode": {
               "expr": {
                 "Literal": {
                   "Value": "'Single'"
                 }
-              }
-            }
-          }
-        }
-      ],
-      "general": [
-        {
-          "properties": {
-            "filter": {
-              "filter": {
-                "Version": 2,
-                "From": [
-                  {
-                    "Name": "i",
-                    "Entity": "Inflation weight",
-                    "Type": 0
-                  }
-                ],
-                "Where": [
-                  {
-                    "Condition": {
-                      "Comparison": {
-                        "ComparisonKind": 0,
-                        "Left": {
-                          "Column": {
-                            "Expression": {
-                              "SourceRef": {
-                                "Source": "i"
-                              }
-                            },
-                            "Property": "Inflation weight"
-                          }
-                        },
-                        "Right": {
-                          "Literal": {
-                            "Value": "0D"
-                          }
-                        }
-                      }
-                    }
-                  }
-                ]
               }
             }
           }

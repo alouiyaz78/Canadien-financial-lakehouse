@@ -1,0 +1,163 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "a70d2d5a251c3360fdfc",
+  "position": {
+    "x": 1165,
+    "y": 320,
+    "z": 3,
+    "height": 740,
+    "width": 727,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "bronze_ingestion_log"
+                    }
+                  },
+                  "Property": "ingested_at"
+                }
+              },
+              "queryRef": "bronze_ingestion_log.ingested_at",
+              "nativeQueryRef": "Downloaded at (UTC)",
+              "active": true,
+              "displayName": "Downloaded at (UTC)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "bronze_ingestion_log"
+                    }
+                  },
+                  "Property": "name"
+                }
+              },
+              "queryRef": "bronze_ingestion_log.name",
+              "nativeQueryRef": "Series",
+              "active": true,
+              "displayName": "Series"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "bronze_ingestion_log"
+                    }
+                  },
+                  "Property": "status"
+                }
+              },
+              "queryRef": "bronze_ingestion_log.status",
+              "nativeQueryRef": "Status",
+              "active": true,
+              "displayName": "Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "bronze_ingestion_log"
+                    }
+                  },
+                  "Property": "changed"
+                }
+              },
+              "queryRef": "bronze_ingestion_log.changed",
+              "nativeQueryRef": "Changed",
+              "active": true,
+              "displayName": "Changed"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "bronze_ingestion_log"
+                  }
+                },
+                "Property": "ingested_at"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Ingestion log (latest first)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
