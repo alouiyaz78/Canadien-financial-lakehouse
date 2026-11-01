@@ -1,0 +1,26 @@
+table 'Inflation weight'
+	lineageTag: ed1388f6-4661-46bc-ade8-257632759313
+
+	measure 'Inflation weight Value' = SELECTEDVALUE ( 'Inflation weight'[Inflation weight], 0.5 )
+		lineageTag: 8778409d-5f98-48a1-a60e-84485174258b
+
+	column 'Inflation weight'
+		lineageTag: 9259758e-837c-474d-895f-5d8ab7099ec8
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Inflation weight' = calculated
+		mode: import
+		source = GENERATESERIES(0, 1.5, 0.1)
+
+	annotation PBI_Id = f71d47bafea94414afe0c931b4216801
+

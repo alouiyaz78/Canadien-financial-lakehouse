@@ -1,0 +1,449 @@
+table _Measures
+	lineageTag: 7dbe709a-2ea4-4aae-8f6e-d2bac9c26264
+
+	measure 'Policy Rate (latest)' =
+			VAR LastDay =
+			    CALCULATE (
+			        MAX ( bi_fact_yield_curve[date] ),
+			        bi_fact_yield_curve[tenor] = "Overnight",
+			        REMOVEFILTERS ( bi_dim_date )
+			    )
+			RETURN
+			    CALCULATE (
+			        MAX ( bi_fact_yield_curve[yield_pct] ),
+			        bi_fact_yield_curve[tenor] = "Overnight",
+			        bi_fact_yield_curve[date] = LastDay,
+			        REMOVEFILTERS ( bi_dim_date )
+			    )
+		formatString: 0.00
+		displayFolder: Policy
+		lineageTag: a21d179a-82ef-4afd-bd78-00337f3a24ac
+
+	measure 'Last Decision' =
+			// [date] is the effective date (day after); show the announcement date
+			VAR LastMove = CALCULATE ( MAX ( bi_fact_policy_decisions[announcement_date] ), REMOVEFILTERS ( bi_dim_date ) )
+			VAR Bp = CALCULATE ( MAX ( bi_fact_policy_decisions[change_bp] ), bi_fact_policy_decisions[announcement_date] = LastMove, REMOVEFILTERS ( bi_dim_date ) )
+			RETURN
+			    IF ( Bp > 0, "+", "" ) & Bp & " bp on " & FORMAT ( LastMove, "d mmm yyyy" )
+		displayFolder: Policy
+		lineageTag: 5a17e616-eb24-4dbf-bd47-40cb9560ff83
+
+	measure 'Next Decision Date' =
+			CALCULATE (
+			    MIN ( bi_fact_policy_calendar[date] ),
+			    bi_fact_policy_calendar[date] >= TODAY (),
+			    REMOVEFILTERS ( bi_dim_date )
+			)
+		displayFolder: Policy
+		lineageTag: 1b952eab-8525-4582-8df8-ce1d5b5da0d4
+
+	measure 'Days to Next Decision' = DATEDIFF ( TODAY (), [Next Decision Date], DAY )
+		formatString: 0
+		displayFolder: Policy
+		lineageTag: 041df5ad-722f-4908-9ff3-1d9115cdc637
+
+	measure 'Policy Rate' = AVERAGE ( bi_mart_macro_monthly[policy_rate] )
+		formatString: 0.00
+		displayFolder: Policy
+		lineageTag: add70aae-0d35-4a88-98b6-d5fee6fbba60
+
+	measure 'Real Policy Rate' = AVERAGE ( bi_mart_macro_monthly[real_policy_rate] )
+		formatString: 0.00
+		displayFolder: Policy
+		lineageTag: a2a8cb9c-c302-4c10-9e7b-a374238edbef
+
+	measure 'Market-Implied Move 6M (bp)' = AVERAGE ( bi_mart_macro_monthly[market_implied_6m_bp] )
+		formatString: 0
+		displayFolder: Policy
+		lineageTag: 4c354fcd-f75d-472d-b7f3-d5078df88806
+
+	measure 'Market Pricing Label' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[market_implied_6m_bp] ) )
+			VAR Bp = CALCULATE ( [Market-Implied Move 6M (bp)], bi_mart_macro_monthly[month] = M )
+			RETURN
+			    SWITCH ( TRUE (), Bp >= 15, "Markets price hikes", Bp <= -15, "Markets price cuts", "Markets price a hold" )
+		displayFolder: Policy
+		lineageTag: 6e8da005-ad2e-4245-9794-e0bf78ab1111
+
+	measure 'Taylor Rule Rate' =
+			AVERAGEX (
+			    FILTER ( bi_mart_macro_monthly, NOT ISBLANK ( bi_mart_macro_monthly[core_avg] ) && NOT ISBLANK ( bi_mart_macro_monthly[unemployment_gap] ) ),
+			    [Neutral real rate Value] + bi_mart_macro_monthly[core_avg] + [Inflation weight Value] * ( bi_mart_macro_monthly[core_avg] - 2 ) - [Slack weight Value] * 2 * bi_mart_macro_monthly[unemployment_gap]
+			)
+		formatString: 0.00
+		displayFolder: Policy
+		lineageTag: 6101f134-d414-41f1-be43-96ee6186b288
+
+	measure 'Taylor Gap' = [Policy Rate] - [Taylor Rule Rate]
+		formatString: 0.00
+		displayFolder: Policy
+		lineageTag: 88d7581e-aee6-41e5-b958-85f7e983bc58
+
+	measure 'Taylor Reading' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[taylor_rule_rate] ) )
+			VAR Gap = CALCULATE ( [Taylor Gap], bi_mart_macro_monthly[month] = M )
+			RETURN SWITCH ( TRUE (), ISBLANK ( Gap ), BLANK (), Gap < -0.5, "Below the rule: room to hike", Gap > 0.5, "Above the rule: room to cut", "In line with the rule" )
+		displayFolder: Policy
+		lineageTag: 141bba29-476d-4235-b069-9fdd250a2ffb
+
+	measure 'Net Policy Stance' = SUM ( bi_mart_policy_signals[signal] )
+		formatString: 0
+		displayFolder: Policy
+		lineageTag: aa656665-ad9a-4e02-b9cd-6a0c1dc4de8c
+
+	measure 'Net Policy Stance Label' =
+			VAR S = [Net Policy Stance]
+			RETURN
+			    SWITCH ( TRUE (), S >= 2, "Hawkish bias", S <= -2, "Dovish bias", "Balanced" )
+		displayFolder: Policy
+		lineageTag: 3db2d519-78be-4dfa-9eb9-1f3e65fd5fb8
+
+	measure 'Hawkish Signals' = CALCULATE ( COUNTROWS ( bi_mart_policy_signals ), bi_mart_policy_signals[signal] = 1 )
+		formatString: 0
+		displayFolder: Policy
+		lineageTag: 94e2df39-d5ae-4fc6-b03f-f040155aa7e7
+
+	measure 'Dovish Signals' = CALCULATE ( COUNTROWS ( bi_mart_policy_signals ), bi_mart_policy_signals[signal] = -1 )
+		formatString: 0
+		displayFolder: Policy
+		lineageTag: 8c05e781-7411-470a-a1b0-aa32d0a9b453
+
+	/// Conditional formatting for the scorecard table (Format → Cell elements → Background → Field value)
+	measure 'Signal Color' = SWITCH ( MAX ( bi_mart_policy_signals[signal] ), 1, "#C0392B", -1, "#1F7A4D", "#9AA5B1" )
+		displayFolder: Policy
+		lineageTag: 618cf2d9-a118-4479-93d5-307bece6a5c2
+
+	measure 'Headline CPI (y/y)' = AVERAGE ( bi_mart_macro_monthly[cpi_headline_yoy] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 8a3b1f05-f904-493f-9995-8a45cb0e2c32
+
+	measure CPI-trim = AVERAGE ( bi_mart_macro_monthly[cpi_trim] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: c092ce4d-0c1e-443c-a3cb-6ea6bf6f2ab8
+
+	measure CPI-median = AVERAGE ( bi_mart_macro_monthly[cpi_median] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 3688f8df-b199-488d-ab80-2e1fd53df02b
+
+	measure CPI-common = AVERAGE ( bi_mart_macro_monthly[cpi_common] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: d4e794a2-2f8b-429b-a4f3-d1c093b1c37a
+
+	measure 'Core Inflation (avg)' = AVERAGE ( bi_mart_macro_monthly[core_avg] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 091e1dc9-7ea6-47f6-bc68-5c0e32809673
+
+	measure 'Core Measures Spread' = AVERAGE ( bi_mart_macro_monthly[core_range] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 822b7095-e883-4353-bd05-bb946ff2a0ef
+
+	measure Target = 2
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: b4d17d6c-c5e3-4460-a11c-95ab72d0460a
+
+	measure 'Target Band Low' = 1
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 7e69f30e-dc98-40b6-93fd-1d458a06b4fc
+
+	measure 'Target Band High' = 3
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 24b56209-a16d-47dc-b5e8-06a719732b78
+
+	measure 'Core vs Target (pts)' = [Core Inflation (avg)] - [Target]
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 9eeb8556-3bfa-4cba-bb60-a4f53554892e
+
+	measure 'Months Outside Target Band' =
+			COUNTROWS (
+			    FILTER (
+			        bi_mart_macro_monthly,
+			        bi_mart_macro_monthly[cpi_headline_yoy] > 3 || bi_mart_macro_monthly[cpi_headline_yoy] < 1
+			    )
+			)
+		formatString: 0
+		displayFolder: Inflation
+		lineageTag: 0e591231-9c4d-4a22-8a98-f820bacf060d
+
+	/// Latest-month KPIs (ignore the date slicer)
+	measure 'Latest Core Inflation' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[core_avg] ), REMOVEFILTERS ( bi_dim_date ) )
+			RETURN CALCULATE ( [Core Inflation (avg)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 0b0dfe30-00b8-4f53-b310-3019a156e11b
+
+	measure 'Latest Headline CPI' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[cpi_headline_yoy] ), REMOVEFILTERS ( bi_dim_date ) )
+			RETURN CALCULATE ( [Headline CPI (y/y)], bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: 936a369f-11a6-4ec5-aa62-e49aed2f8d2d
+
+	measure 'Inflation Expectations 2-3Y' = AVERAGE ( bi_mart_macro_monthly[infl_exp_consensus_2_3y] )
+		formatString: 0.00
+		displayFolder: Inflation
+		lineageTag: cb69c635-80eb-46b0-9251-29bb74b313f6
+
+	measure 'WTI (USD)' = AVERAGE ( bi_mart_macro_monthly[wti_usd] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: 6f4c72f5-1ae6-4f5e-8b21-f88d7e924784
+
+	measure 'WTI (CAD)' = AVERAGE ( bi_mart_macro_monthly[wti_cad] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: 5c9d3c56-bfae-4b0b-8816-e0b47b6cc558
+
+	measure 'WTI CAD (y/y %)' = AVERAGE ( bi_mart_macro_monthly[wti_cad_yoy] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: a94055f0-47be-4d45-952f-4ead480d0146
+
+	measure 'WTI USD (y/y %)' = AVERAGE ( bi_mart_macro_monthly[wti_usd_yoy] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: 7a962630-c27c-45a8-be51-f3bf416a8761
+
+	/// How much of the oil move the exchange rate amplified (+) or cushioned (−) for Canadians
+	measure 'FX Effect on Oil (pts)' = [WTI CAD (y/y %)] - [WTI USD (y/y %)]
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: fc85eb33-d12c-401e-94f2-292541e064b6
+
+	measure 'Energy Commodity Prices (y/y %)' = AVERAGE ( bi_mart_macro_monthly[bcpi_energy_yoy] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: dd09eaae-ec8f-4bca-a7fb-8211f7dcda92
+
+	measure 'Headline minus Core (pts)' = AVERAGE ( bi_mart_macro_monthly[headline_minus_core] )
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: 09b991a8-3521-416e-92b3-1b7e3c1e29db
+
+	measure 'Peak Lag to Core (months)' =
+			MAXX (
+			    TOPN ( 1, bi_mart_energy_passthrough, bi_mart_energy_passthrough[corr_core], DESC ),
+			    bi_mart_energy_passthrough[lag_months]
+			)
+		formatString: 0
+		displayFolder: Energy
+		lineageTag: fc61f85a-17ee-4714-8a4e-abb1f065b113
+
+	measure 'Peak Correlation to Core' =
+			MAXX (
+			    TOPN ( 1, bi_mart_energy_passthrough, bi_mart_energy_passthrough[corr_core], DESC ),
+			    bi_mart_energy_passthrough[corr_core]
+			)
+		formatString: 0.00
+		displayFolder: Energy
+		lineageTag: 2601634c-86ba-418a-8eed-79c7c7efbb00
+
+	measure 'Pass-through Reading' =
+			"Energy prices lead core inflation by about " & [Peak Lag to Core (months)]
+			    & " months (correlation " & FORMAT ( [Peak Correlation to Core], "0.00" ) & ")"
+		displayFolder: Energy
+		lineageTag: a7b0b640-3f79-4ab4-9dd7-29b395027325
+
+	measure 'US Tariff on Canada (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: 2ada241a-ed8a-436f-a3bd-86b8bd068e85
+
+	measure 'US Tariff on Mexico (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: cab6798f-f246-4def-9313-536fa62ea14b
+
+	measure 'US Tariff on China (%)' = AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_china] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: 5f0c3410-2abb-4453-b475-029fd7a5929d
+
+	measure 'Canada Advantage vs China (pts)' = AVERAGE ( bi_mart_macro_monthly[canada_tariff_advantage_vs_china] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: 72a7d5de-f2f7-4c2b-b565-9110cf0ca756
+
+	measure 'US Import Prices from Canada (y/y %)' = AVERAGE ( bi_mart_macro_monthly[us_import_prices_from_canada_yoy] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: 8a28b296-eede-41bf-8818-81c2585f5c4c
+
+	measure 'Trade Policy Uncertainty' = AVERAGE ( bi_mart_macro_monthly[trade_policy_uncertainty] )
+		displayFolder: Trade
+		lineageTag: 0295cb82-4cfd-4bcd-b747-c87a0a3c1ab0
+
+	measure USD/CAD = AVERAGE ( bi_mart_macro_monthly[usdcad] )
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: 50fa8a59-f0de-4ccf-8040-baab75cb9659
+
+	measure 'Tariff Change vs Pre-2025 (pts)' =
+			VAR Baseline =
+			    CALCULATE (
+			        AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] ),
+			        DATESBETWEEN ( bi_dim_date[date], DATE ( 2024, 1, 1 ), DATE ( 2024, 12, 31 ) ),
+			        REMOVEFILTERS ( bi_dim_date )
+			    )
+			RETURN [US Tariff on Canada (%)] - Baseline
+		formatString: 0.00
+		displayFolder: Trade
+		lineageTag: f22ab75a-c836-4b50-b58e-7d12486156fe
+
+	/// Negative = Canadian exporters cut their prices, i.e. absorb part of the tariff
+	measure 'Exporter Absorption Reading' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_import_prices_from_canada_yoy] ) )
+			VAR P = CALCULATE ( [US Import Prices from Canada (y/y %)], bi_mart_macro_monthly[month] = M )
+			RETURN
+			    IF ( P < 0, "Canadian exporters are cutting prices (absorbing tariffs)", "No sign of price absorption by Canadian exporters" )
+		displayFolder: Trade
+		lineageTag: fec68d9c-863c-433c-af5f-3b584dd059a9
+
+	measure 'Mortgage 5Y Today (%)' = AVERAGE ( bi_mart_macro_monthly[mortgage_5y] )
+		formatString: 0.00
+		displayFolder: Mortgage
+		lineageTag: 248ff945-65b6-40c8-aeb4-6b476158a3e6
+
+	measure 'Mortgage 5Y at Origination (%)' = AVERAGE ( bi_mart_macro_monthly[mortgage_5y_at_origination] )
+		formatString: 0.00
+		displayFolder: Mortgage
+		lineageTag: d7f3e583-d8cc-4fc3-a154-aff2f5a0add5
+
+	measure 'Renewal Rate Change (pts)' = AVERAGE ( bi_mart_macro_monthly[renewal_rate_change] )
+		formatString: 0.00
+		displayFolder: Mortgage
+		lineageTag: d47b9e27-df0d-408e-a3b4-f07e56ce9ab8
+
+	measure 'Bank Mortgage Spread (pts)' = AVERAGE ( bi_mart_macro_monthly[mortgage_spread_5y] )
+		formatString: 0.00
+		displayFolder: Mortgage
+		lineageTag: a9ef4ab1-3578-46bc-b49d-768c484bfb9b
+
+	measure 'Payment at Origination' =
+			VAR R = [Mortgage 5Y at Origination (%)] / 100
+			VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+			VAR N = [Amortization years Value] * 12
+			RETURN [Mortgage amount Value] * J / ( 1 - ( 1 + J ) ^ ( -N ) )
+		formatString: \$#,0
+		displayFolder: Mortgage
+		lineageTag: 308fe26c-0450-43cb-bcda-c274fe10aa20
+
+	measure 'Balance at Renewal' =
+			VAR R = [Mortgage 5Y at Origination (%)] / 100
+			VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+			VAR P = [Payment at Origination]
+			RETURN [Mortgage amount Value] * ( 1 + J ) ^ 60 - P * ( ( 1 + J ) ^ 60 - 1 ) / J
+		formatString: \$#,0
+		displayFolder: Mortgage
+		lineageTag: 2f18f7f4-db2f-493c-baf7-6704b7eb45b1
+
+	measure 'Payment at Renewal' =
+			VAR R = [Mortgage 5Y Today (%)] / 100
+			VAR J = ( 1 + R / 2 ) ^ ( 1 / 6 ) - 1
+			VAR N = [Amortization years Value] * 12 - 60
+			RETURN [Balance at Renewal] * J / ( 1 - ( 1 + J ) ^ ( -N ) )
+		formatString: \$#,0
+		displayFolder: Mortgage
+		lineageTag: 49386b48-fd4d-4a25-b7eb-4c2e68f88d83
+
+	measure 'Monthly Payment Shock ($)' = [Payment at Renewal] - [Payment at Origination]
+		formatString: \$#,0
+		displayFolder: Mortgage
+		lineageTag: 98eab455-bc3f-488a-ad6d-5f7ba53fbd6b
+
+	measure 'Monthly Payment Shock (%)' = DIVIDE ( [Payment at Renewal], [Payment at Origination] ) - 1
+		formatString: 0.0%
+		displayFolder: Mortgage
+		lineageTag: b5fa91d2-65c6-484e-a577-5fe471ac9908
+
+	measure 'Annual Payment Shock ($)' = [Monthly Payment Shock ($)] * 12
+		formatString: \$#,0
+		displayFolder: Mortgage
+		lineageTag: a6892c12-2c98-431c-a1bd-1a31c61bbb28
+
+	measure 'Yield on Selected Date' =
+			VAR D = MAX ( bi_dim_date[date] )
+			VAR LastD = CALCULATE ( MAX ( bi_fact_yield_curve[date] ), bi_fact_yield_curve[date] <= D, REMOVEFILTERS ( bi_dim_date ) )
+			RETURN CALCULATE ( AVERAGE ( bi_fact_yield_curve[yield_pct] ), bi_fact_yield_curve[date] = LastD, REMOVEFILTERS ( bi_dim_date ) )
+		formatString: 0.00
+		displayFolder: Curve
+		lineageTag: dec53776-155a-459b-8328-5543ac652541
+
+	measure 'Yield 1 Year Earlier' =
+			VAR D = MAX ( bi_dim_date[date] ) - 365
+			VAR LastD = CALCULATE ( MAX ( bi_fact_yield_curve[date] ), bi_fact_yield_curve[date] <= D, REMOVEFILTERS ( bi_dim_date ) )
+			RETURN CALCULATE ( AVERAGE ( bi_fact_yield_curve[yield_pct] ), bi_fact_yield_curve[date] = LastD, REMOVEFILTERS ( bi_dim_date ) )
+		formatString: 0.00
+		displayFolder: Curve
+		lineageTag: d659e3d5-aeee-4c4e-af61-29ea48053fd8
+
+	measure '10Y-2Y Spread' = AVERAGE ( bi_mart_macro_monthly[term_spread_10y_2y] )
+		formatString: 0.00
+		displayFolder: Curve
+		lineageTag: 6fa15605-7471-4eb8-9bb7-02f6c1043d00
+
+	measure 'Curve Inverted' =
+			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[term_spread_10y_2y] ) )
+			RETURN IF ( CALCULATE ( [10Y-2Y Spread], bi_mart_macro_monthly[month] = M ) < 0, "Inverted", "Normal" )
+		displayFolder: Curve
+		lineageTag: ce0cf76a-6aa7-4604-bb33-ee65e50000e6
+
+	measure 'Series Monitored' = COUNTROWS ( freshness_report )
+		formatString: 0
+		displayFolder: Ops
+		lineageTag: 68e95d65-f0aa-4e7f-84e9-6f1a05598eaf
+
+	measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } )
+		formatString: 0
+		displayFolder: Ops
+		lineageTag: 36daff1a-9045-48d7-8d62-c8b077c5ec0c
+
+	measure 'Data Freshness Score' = DIVIDE ( CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "ok", "retired" } ), [Series Monitored] )
+		formatString: 0%
+		displayFolder: Ops
+		lineageTag: 4dd5fd38-3bec-4b07-b75f-764ac1ff26b6
+
+	measure 'Ingestion Runs' = DISTINCTCOUNT ( bronze_ingestion_log[run_id] )
+		formatString: 0
+		displayFolder: Ops
+		lineageTag: 8092dc40-30ec-456e-930a-80f733ebee8b
+
+	measure 'Series Changed (runs)' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[changed] = TRUE () )
+		formatString: 0
+		displayFolder: Ops
+		lineageTag: abb99e4a-e8e4-4769-b130-1b62050a23c1
+
+	measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" )
+		formatString: 0
+		displayFolder: Ops
+		lineageTag: c980ce17-2033-4f38-8241-7f1ce6b830b1
+
+	column 'Colonne 1'
+		dataType: string
+		lineageTag: 5664cee6-fa11-45e5-b855-d91dda483d00
+		summarizeBy: none
+		sourceColumn: Colonne 1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Colonne 1" = _t]),
+				    #"Type modifié" = Table.TransformColumnTypes(Source,{{"Colonne 1", type text}})
+				in
+				    #"Type modifié"
+
+	annotation PBI_ResultType = Table
+

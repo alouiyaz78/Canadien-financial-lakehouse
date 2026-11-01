@@ -1,0 +1,57 @@
+table bi_fact_yield_curve
+	lineageTag: c501cdea-374f-4dc9-a222-943a31368506
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: dc9f424e-f0c6-451a-8401-806e3985e10f
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column tenor
+		dataType: string
+		lineageTag: edd83aa4-9d26-491e-b3dd-f8eb9e129005
+		summarizeBy: none
+		sourceColumn: tenor
+		sortByColumn: tenor_months
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column tenor_months
+		dataType: int64
+		formatString: 0
+		lineageTag: 0ef0d506-058c-4111-a313-f989dc00095b
+		summarizeBy: sum
+		sourceColumn: tenor_months
+
+		annotation SummarizationSetBy = Automatic
+
+	column yield_pct
+		dataType: double
+		lineageTag: 6b568db2-38a5-4f44-9e54-15fb8654df8b
+		summarizeBy: sum
+		sourceColumn: yield_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition bi_fact_yield_curve = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_fact_yield_curve_Table = cfl_Schema{[Name="bi_fact_yield_curve",Kind="Table"]}[Data]
+				in
+				    bi_fact_yield_curve_Table
+
+	annotation PBI_ResultType = Table
+

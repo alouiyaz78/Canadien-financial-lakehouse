@@ -1,0 +1,94 @@
+table freshness_report
+	lineageTag: 7e98777c-b663-47fa-8ae2-e4f778184bcd
+
+	column name
+		dataType: string
+		lineageTag: b4ad5cc6-7f6a-4f76-8bf1-bd0e41b5e30e
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		dataType: string
+		lineageTag: d9dd5baa-0a01-474a-bf5d-608df40080f8
+		summarizeBy: none
+		sourceColumn: source
+
+		annotation SummarizationSetBy = Automatic
+
+	column frequency
+		dataType: string
+		lineageTag: 231b2195-b118-4df5-aa75-0ea95d606d7b
+		summarizeBy: none
+		sourceColumn: frequency
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 0f97d8ab-3115-44d7-966e-fc871207b088
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: bccabcd5-81cd-41f9-87f9-de5fdbaa5c1b
+		summarizeBy: none
+		sourceColumn: last_date
+
+		variation Variation
+			isDefault
+			relationship: 3c318791-6ad9-4feb-9163-220f5d9997f9
+			defaultHierarchy: LocalDateTable_d0516d55-c229-4d0d-a05c-2e6fe8cddadd.'Hiérarchie de dates'
+
+		annotation SummarizationSetBy = Automatic
+
+	column age_days
+		dataType: int64
+		formatString: 0
+		lineageTag: fe6342d2-32c9-4430-8dd0-2b7c54dfba24
+		summarizeBy: sum
+		sourceColumn: age_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column max_age_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b815873-472c-48d1-a3a5-f5ce62c74760
+		summarizeBy: sum
+		sourceColumn: max_age_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column checked_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 33ab3e90-1f6e-4b87-b736-ce7034061ab4
+		summarizeBy: none
+		sourceColumn: checked_at
+
+		variation Variation
+			isDefault
+			relationship: c21fda8d-d102-4bcb-a526-068e35693f0a
+			defaultHierarchy: LocalDateTable_30a01f93-ae9d-4397-8473-6a6d859b8388.'Hiérarchie de dates'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition freshness_report = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    freshness_report_Table = cfl_Schema{[Name="freshness_report",Kind="Table"]}[Data]
+				in
+				    freshness_report_Table
+
+	annotation PBI_ResultType = Table
+

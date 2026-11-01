@@ -1,0 +1,25 @@
+table 'Mortgage amount'
+	lineageTag: ef27afe5-4fb8-4609-93af-6a81264cb3c2
+
+	measure 'Mortgage amount Value' = SELECTEDVALUE ( 'Mortgage amount'[Mortgage amount], 500000 )
+		lineageTag: f89e6ea3-9411-4ba3-9eef-26bdc65cae21
+
+	column 'Mortgage amount'
+		formatString: 0
+		lineageTag: 7fa58497-e1fb-47b8-b15f-78b44eb718a4
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Mortgage amount' = calculated
+		mode: import
+		source = GENERATESERIES(100000, 1500000, 25000)
+
+	annotation PBI_Id = 0c94aad9918f4859bafc53f0e536cc0a
+

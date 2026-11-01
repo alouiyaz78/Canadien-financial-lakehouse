@@ -1,0 +1,54 @@
+table bi_mart_energy_passthrough
+	lineageTag: 65dc85ef-d92d-462d-a4b3-8365a1c48e64
+
+	column lag_months
+		dataType: int64
+		formatString: 0
+		lineageTag: 1cb5b702-2504-4ea0-a123-c72205db1e17
+		summarizeBy: sum
+		sourceColumn: lag_months
+
+		annotation SummarizationSetBy = Automatic
+
+	column corr_headline
+		dataType: double
+		lineageTag: f2da42b8-0a8c-40ba-91c0-aedc86a90181
+		summarizeBy: sum
+		sourceColumn: corr_headline
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column corr_core
+		dataType: double
+		lineageTag: 4b8f0b33-43ae-40dc-a545-abd63cfb3342
+		summarizeBy: sum
+		sourceColumn: corr_core
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column n_months
+		dataType: int64
+		formatString: 0
+		lineageTag: 770a1adb-f1cb-4861-9609-b4c8b3b27ce9
+		summarizeBy: sum
+		sourceColumn: n_months
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bi_mart_energy_passthrough = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_mart_energy_passthrough_Table = cfl_Schema{[Name="bi_mart_energy_passthrough",Kind="Table"]}[Data]
+				in
+				    bi_mart_energy_passthrough_Table
+
+	annotation PBI_ResultType = Table
+

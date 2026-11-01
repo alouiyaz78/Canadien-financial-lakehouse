@@ -1,0 +1,546 @@
+table bi_mart_macro_monthly
+	lineageTag: 1b2206da-1320-4ebb-90db-b68b1ac4e0fd
+
+	column month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1671fe9a-2996-48cf-b81e-16718e91e7d8
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column is_partial_month
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 101b4047-21a9-4d1c-a163-e8d846dbadd1
+		summarizeBy: none
+		sourceColumn: is_partial_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column policy_rate
+		dataType: double
+		lineageTag: 615569f7-d9b0-4456-ba80-3252a13e1f9e
+		summarizeBy: sum
+		sourceColumn: policy_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column corra
+		dataType: double
+		lineageTag: 85eef4b4-e125-4a25-9e42-b6ae93f51fa7
+		summarizeBy: sum
+		sourceColumn: corra
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column tbill_3m
+		dataType: double
+		lineageTag: c1837747-fc25-49f4-a766-cce848346024
+		summarizeBy: sum
+		sourceColumn: tbill_3m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column tbill_6m
+		dataType: double
+		lineageTag: 06e04559-6341-4e69-a664-81c7aad03b5b
+		summarizeBy: sum
+		sourceColumn: tbill_6m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bond_2y
+		dataType: double
+		lineageTag: 940e0141-ceb5-4950-934e-4f49de44e9ee
+		summarizeBy: sum
+		sourceColumn: bond_2y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bond_5y
+		dataType: double
+		lineageTag: 6540c46f-eab9-48a4-8296-090d763f4243
+		summarizeBy: sum
+		sourceColumn: bond_5y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bond_10y
+		dataType: double
+		lineageTag: 254bddde-24ae-480b-8231-0f6c7e3c47bf
+		summarizeBy: sum
+		sourceColumn: bond_10y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column us_fed_funds
+		dataType: double
+		lineageTag: 5b2afd48-f95f-4e07-a254-312cf87497ee
+		summarizeBy: sum
+		sourceColumn: us_fed_funds
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column term_spread_10y_2y
+		dataType: double
+		lineageTag: e0ac83f8-db37-43f8-9155-dedb1ead49e9
+		summarizeBy: sum
+		sourceColumn: term_spread_10y_2y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column market_implied_6m_bp
+		dataType: double
+		lineageTag: 69bd4996-847b-4b6f-a61c-53d4ddfe5a6b
+		summarizeBy: sum
+		sourceColumn: market_implied_6m_bp
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ca_us_policy_gap
+		dataType: double
+		lineageTag: f4d9220a-44d9-4a05-bead-780aea525f0c
+		summarizeBy: sum
+		sourceColumn: ca_us_policy_gap
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ca_us_10y_spread
+		dataType: double
+		lineageTag: 11febb7f-23ff-4905-bb19-48b4cf3af45b
+		summarizeBy: sum
+		sourceColumn: ca_us_10y_spread
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cpi_headline_yoy
+		dataType: double
+		lineageTag: b2a2b645-d732-464d-8cd4-c16ba3b68d30
+		summarizeBy: sum
+		sourceColumn: cpi_headline_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cpi_trim
+		dataType: double
+		lineageTag: 554d2970-5c73-4bb6-aadb-8315cba709a5
+		summarizeBy: sum
+		sourceColumn: cpi_trim
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cpi_median
+		dataType: double
+		lineageTag: 1e1dc567-d3c9-468d-a868-251df5b7e03c
+		summarizeBy: sum
+		sourceColumn: cpi_median
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cpi_common
+		dataType: double
+		lineageTag: f32bfd78-bb56-4bef-9246-304d0454490c
+		summarizeBy: sum
+		sourceColumn: cpi_common
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column core_avg
+		dataType: double
+		lineageTag: 8c548465-7341-4e4b-8c9a-b940a0d0e2e7
+		summarizeBy: sum
+		sourceColumn: core_avg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column core_range
+		dataType: double
+		lineageTag: 324f6f56-c007-44aa-b675-e3bb003c3a6b
+		summarizeBy: sum
+		sourceColumn: core_range
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column headline_minus_core
+		dataType: double
+		lineageTag: 2fb9b7db-c3ed-4a85-921b-63a8e6e62710
+		summarizeBy: sum
+		sourceColumn: headline_minus_core
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column inflation_target
+		dataType: double
+		lineageTag: af6772ec-ea6f-4f78-a959-96a1681237ed
+		summarizeBy: sum
+		sourceColumn: inflation_target
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column target_low
+		dataType: double
+		lineageTag: 9f7f9295-2465-42a3-a9fb-fba4338de391
+		summarizeBy: sum
+		sourceColumn: target_low
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column target_high
+		dataType: double
+		lineageTag: 83f86305-a210-4bf3-88d2-e47503d5d5fe
+		summarizeBy: sum
+		sourceColumn: target_high
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column infl_exp_consensus_2_3y
+		dataType: double
+		lineageTag: 51344c47-10f2-430e-8aeb-da9b690e365c
+		summarizeBy: sum
+		sourceColumn: infl_exp_consensus_2_3y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bos_firms_infl_above_3
+		dataType: double
+		lineageTag: a3ce8e88-e754-46ac-bade-81b4300a03a7
+		summarizeBy: sum
+		sourceColumn: bos_firms_infl_above_3
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unemployment_rate
+		dataType: double
+		lineageTag: 7b596b43-c88f-4a96-a71a-dde24c1acd88
+		summarizeBy: sum
+		sourceColumn: unemployment_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unemployment_trend_10y
+		dataType: double
+		lineageTag: 2c0cd1a8-7b9a-48cd-9adb-a3cef8e72254
+		summarizeBy: sum
+		sourceColumn: unemployment_trend_10y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unemployment_gap
+		dataType: double
+		lineageTag: e33ac452-f01a-4d78-8482-ccc87655538f
+		summarizeBy: sum
+		sourceColumn: unemployment_gap
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column employment_yoy
+		dataType: double
+		lineageTag: 430f2709-5265-4158-ab6c-c40436226e35
+		summarizeBy: sum
+		sourceColumn: employment_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column gdp_yoy
+		dataType: double
+		lineageTag: c4c7ece5-9726-4346-9a26-d203af8841f7
+		summarizeBy: sum
+		sourceColumn: gdp_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column wage_growth_lfs
+		dataType: double
+		lineageTag: 89ad5587-d53c-43fe-b2f4-d3011caf8381
+		summarizeBy: sum
+		sourceColumn: wage_growth_lfs
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column real_policy_rate
+		dataType: double
+		lineageTag: 80afd588-7276-4521-b185-e21c326d268b
+		summarizeBy: sum
+		sourceColumn: real_policy_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column taylor_rule_rate
+		dataType: double
+		lineageTag: 4df56246-fa33-47bb-ab17-304ff141a29d
+		summarizeBy: sum
+		sourceColumn: taylor_rule_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column taylor_gap
+		dataType: double
+		lineageTag: 3927226a-bfda-4c6d-b2f5-6b7008d49bc3
+		summarizeBy: sum
+		sourceColumn: taylor_gap
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column wti_usd
+		dataType: double
+		lineageTag: d1abb09e-b3bd-46fb-8e45-7f98a8aa4170
+		summarizeBy: sum
+		sourceColumn: wti_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column usdcad
+		dataType: double
+		lineageTag: 50ab398a-0fee-4ca5-a192-52c10e5e9b7c
+		summarizeBy: sum
+		sourceColumn: usdcad
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column wti_cad
+		dataType: double
+		lineageTag: 2e3124d3-6488-42c0-a7bf-69136aefb1d8
+		summarizeBy: sum
+		sourceColumn: wti_cad
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column wti_usd_yoy
+		dataType: double
+		lineageTag: 55f5c608-3c01-4aff-8fea-7a4d4e89f6ed
+		summarizeBy: sum
+		sourceColumn: wti_usd_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column wti_cad_yoy
+		dataType: double
+		lineageTag: bb739e70-ec7c-4be2-b0ea-58189bad37f8
+		summarizeBy: sum
+		sourceColumn: wti_cad_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bcpi_energy_yoy
+		dataType: double
+		lineageTag: 1c64d8fd-8fa1-4326-98ce-13ea19070746
+		summarizeBy: sum
+		sourceColumn: bcpi_energy_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column bcpi_ex_energy_yoy
+		dataType: double
+		lineageTag: b3ce847f-71f5-496c-8031-6b5fa1e8f258
+		summarizeBy: sum
+		sourceColumn: bcpi_ex_energy_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column us_tariff_rate_on_canada
+		dataType: double
+		lineageTag: f8bf70bc-2932-441b-89cb-80f9c0e143c6
+		summarizeBy: sum
+		sourceColumn: us_tariff_rate_on_canada
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column us_tariff_rate_on_mexico
+		dataType: double
+		lineageTag: fe2d48db-4abc-4018-948f-7a2518e37166
+		summarizeBy: sum
+		sourceColumn: us_tariff_rate_on_mexico
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column us_tariff_rate_on_china
+		dataType: double
+		lineageTag: 82411236-4d3a-4080-abb7-deea8bc7cca1
+		summarizeBy: sum
+		sourceColumn: us_tariff_rate_on_china
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column canada_tariff_advantage_vs_china
+		dataType: double
+		lineageTag: 14c47197-fc26-4d25-94aa-0132e62d23e1
+		summarizeBy: sum
+		sourceColumn: canada_tariff_advantage_vs_china
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column us_import_prices_from_canada_yoy
+		dataType: double
+		lineageTag: 6f2b3b9b-0234-4970-a863-49ec5561dec9
+		summarizeBy: sum
+		sourceColumn: us_import_prices_from_canada_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column trade_policy_uncertainty
+		dataType: double
+		lineageTag: 4fc9b286-63b8-4461-9a5e-e89e2615d9c2
+		summarizeBy: sum
+		sourceColumn: trade_policy_uncertainty
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column usdcad_yoy
+		dataType: double
+		lineageTag: 13d921d5-ab0a-401e-808b-a4fd9be39ea4
+		summarizeBy: sum
+		sourceColumn: usdcad_yoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column mortgage_5y
+		dataType: double
+		lineageTag: 6550ae7e-0dfd-4434-8f8c-9e76fa601b8b
+		summarizeBy: sum
+		sourceColumn: mortgage_5y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column mortgage_5y_at_origination
+		dataType: double
+		lineageTag: eca083c6-b1d8-4311-ada1-747c59d6bd1e
+		summarizeBy: sum
+		sourceColumn: mortgage_5y_at_origination
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column renewal_rate_change
+		dataType: double
+		lineageTag: 98eab043-9bd8-4c22-a010-c7ba90765eaa
+		summarizeBy: sum
+		sourceColumn: renewal_rate_change
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column mortgage_spread_5y
+		dataType: double
+		lineageTag: e57dc609-e5c1-4d46-b311-f88be272a2c9
+		summarizeBy: sum
+		sourceColumn: mortgage_spread_5y
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition bi_mart_macro_monthly = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_mart_macro_monthly_Table = cfl_Schema{[Name="bi_mart_macro_monthly",Kind="Table"]}[Data]
+				in
+				    bi_mart_macro_monthly_Table
+
+	annotation PBI_ResultType = Table
+

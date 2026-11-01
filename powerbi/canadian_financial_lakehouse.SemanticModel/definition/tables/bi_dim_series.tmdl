@@ -1,0 +1,90 @@
+table bi_dim_series
+	lineageTag: af3acef6-1ec9-4f47-afa4-1356a3cfa68c
+
+	column name
+		dataType: string
+		lineageTag: 0c1cdb59-a5fc-47c5-8d4d-4e617f18be13
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: c967942e-8e19-4abc-af20-3f7a04a323d6
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		dataType: string
+		lineageTag: 03b98908-2b2b-4f65-a0c5-8ba4e329cb18
+		summarizeBy: none
+		sourceColumn: source
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_id
+		dataType: string
+		lineageTag: ca08cab6-a2e2-4ad2-8185-288263f9f030
+		summarizeBy: none
+		sourceColumn: source_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column domain
+		dataType: string
+		lineageTag: 40280d10-6664-4353-8acb-82956f35bd9e
+		summarizeBy: none
+		sourceColumn: domain
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: f11201c5-c72c-4c30-af55-befd80d52017
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column frequency
+		dataType: string
+		lineageTag: 66ec5b35-8115-4f68-9163-0b8343964b48
+		summarizeBy: none
+		sourceColumn: frequency
+
+		annotation SummarizationSetBy = Automatic
+
+	column release_lag_months
+		dataType: int64
+		formatString: 0
+		lineageTag: 9c0ce437-ed93-4ed5-bc6f-2fb494827451
+		summarizeBy: sum
+		sourceColumn: release_lag_months
+
+		annotation SummarizationSetBy = Automatic
+
+	column discontinued
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 4d29c9d3-25c0-42b6-b15a-2c4442b8484d
+		summarizeBy: none
+		sourceColumn: discontinued
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bi_dim_series = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_dim_series_Table = cfl_Schema{[Name="bi_dim_series",Kind="Table"]}[Data]
+				in
+				    bi_dim_series_Table
+
+	annotation PBI_ResultType = Exception
+

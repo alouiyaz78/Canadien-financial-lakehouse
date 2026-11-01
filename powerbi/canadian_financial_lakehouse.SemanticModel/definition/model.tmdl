@@ -1,0 +1,41 @@
+model Model
+	culture: fr-FR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: fr-CA
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["bi_dim_date","bi_dim_series","bi_fact_observations","bi_fact_policy_calendar","bi_fact_policy_decisions","bi_fact_yield_curve","bi_mart_energy_passthrough","bi_mart_macro_monthly","bi_mart_policy_signals","bronze_ingestion_log","freshness_report","_Measures"]
+
+annotation PBI_ProTooling = ["TMDLView_Desktop","DevMode"]
+
+ref table bi_dim_date
+ref table DateTableTemplate_34e49158-cc4c-480d-9f02-e3630afe511c
+ref table bi_dim_series
+ref table bi_fact_observations
+ref table bi_fact_policy_calendar
+ref table LocalDateTable_b9358580-695a-49d7-aaf6-041ee9a58e4e
+ref table bi_fact_policy_decisions
+ref table LocalDateTable_7905c435-ce51-4ebe-a4c9-811b45da5365
+ref table bi_fact_yield_curve
+ref table bi_mart_energy_passthrough
+ref table bi_mart_macro_monthly
+ref table bi_mart_policy_signals
+ref table LocalDateTable_bcae03d1-a96c-4e99-aa32-ff14349d4a47
+ref table bronze_ingestion_log
+ref table freshness_report
+ref table LocalDateTable_d0516d55-c229-4d0d-a05c-2e6fe8cddadd
+ref table LocalDateTable_30a01f93-ae9d-4397-8473-6a6d859b8388
+ref table _Measures
+ref table 'Neutral real rate'
+ref table 'Inflation weight'
+ref table 'Slack weight'
+ref table 'Mortgage amount'
+ref table 'Amortization years'
+
+ref cultureInfo fr-FR
+

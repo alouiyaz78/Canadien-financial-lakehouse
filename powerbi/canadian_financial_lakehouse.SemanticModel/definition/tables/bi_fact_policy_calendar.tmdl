@@ -1,0 +1,57 @@
+table bi_fact_policy_calendar
+	lineageTag: 7ec0a3c4-cab8-4558-80ce-12f1ae2e565b
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 82bd4ac6-b3e7-493f-93e5-132e948b9607
+		summarizeBy: none
+		sourceColumn: date
+
+		variation Variation
+			isDefault
+			relationship: fa227e6a-d50f-4bd8-9664-622c7bc9eebe
+			defaultHierarchy: LocalDateTable_b9358580-695a-49d7-aaf6-041ee9a58e4e.'Hiérarchie de dates'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column type
+		dataType: string
+		lineageTag: c84f6ce9-e3b2-435d-8861-2fbacd907dc7
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	column outcome
+		dataType: string
+		lineageTag: 15e3b529-956d-425c-a97b-29aa3000df9d
+		summarizeBy: none
+		sourceColumn: outcome
+
+		annotation SummarizationSetBy = Automatic
+
+	column mpr
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ac943bc5-1eba-44f7-8f04-79076adc0d4e
+		summarizeBy: none
+		sourceColumn: mpr
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bi_fact_policy_calendar = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_fact_policy_calendar_Table = cfl_Schema{[Name="bi_fact_policy_calendar",Kind="Table"]}[Data]
+				in
+				    bi_fact_policy_calendar_Table
+
+	annotation PBI_ResultType = Exception
+

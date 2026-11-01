@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "8d21648d406cdb27b728",
+  "position": {
+    "x": 1212,
+    "y": 892,
+    "z": 6,
+    "height": 168,
+    "width": 679,
+    "tabOrder": 6
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Taylor Reading"
+                }
+              },
+              "queryRef": "_Measures.Taylor Reading",
+              "nativeQueryRef": "Taylor Reading"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

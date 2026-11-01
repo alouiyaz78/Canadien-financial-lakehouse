@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "d713de2736850ea07b40",
+  "displayName": "Policy Monitor",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920
+}

@@ -1,0 +1,26 @@
+table 'Neutral real rate'
+	lineageTag: 6aabb087-d4a4-4020-9067-4f09baab4983
+
+	measure 'Neutral real rate Value' = SELECTEDVALUE ( 'Neutral real rate'[Neutral real rate], 0.75 )
+		lineageTag: f37224b9-3fde-46ee-a51d-3493df3dc8e8
+
+	column 'Neutral real rate'
+		lineageTag: c787410f-448c-4d63-b791-a002fa26b7d3
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Neutral real rate' = calculated
+		mode: import
+		source = GENERATESERIES(0, 2, 0.25)
+
+	annotation PBI_Id = 6a16de24877a4816a20239e817b8d7b6
+

@@ -1,0 +1,111 @@
+table bi_mart_policy_signals
+	lineageTag: 7f291a6a-d9fc-4c8e-9167-cc9af896a9c8
+
+	column indicator
+		dataType: string
+		lineageTag: 28a94099-cb96-46ed-a514-a57057457e0c
+		summarizeBy: none
+		sourceColumn: indicator
+
+		annotation SummarizationSetBy = Automatic
+
+	column column
+		dataType: string
+		lineageTag: a8488e43-c944-45c9-8c4a-31162c4daedd
+		summarizeBy: none
+		sourceColumn: column
+
+		annotation SummarizationSetBy = Automatic
+
+	column latest_value
+		dataType: double
+		lineageTag: 0edde047-fd9d-4638-920e-e35472d00373
+		summarizeBy: sum
+		sourceColumn: latest_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unit
+		dataType: string
+		lineageTag: 816306a1-8284-48f3-b6fd-157a5f3adaa2
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column reference_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 03e1a1e2-d773-4913-bc36-65842172f008
+		summarizeBy: none
+		sourceColumn: reference_month
+
+		variation Variation
+			isDefault
+			relationship: 40012ca1-0f9d-46ef-83eb-9c83edf48ffd
+			defaultHierarchy: LocalDateTable_bcae03d1-a96c-4e99-aa32-ff14349d4a47.'Hiérarchie de dates'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column hawkish_threshold
+		dataType: double
+		lineageTag: ba1e6bef-76aa-4f60-8d3c-4b19fb8b7360
+		summarizeBy: sum
+		sourceColumn: hawkish_threshold
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dovish_threshold
+		dataType: double
+		lineageTag: 986967ff-5bd4-4c62-8410-c0c52323b01a
+		summarizeBy: sum
+		sourceColumn: dovish_threshold
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column signal
+		dataType: int64
+		formatString: 0
+		lineageTag: ac0edfa8-e253-4501-ad32-a788dba77240
+		summarizeBy: sum
+		sourceColumn: signal
+
+		annotation SummarizationSetBy = Automatic
+
+	column signal_label
+		dataType: string
+		lineageTag: 44fcb9fc-9672-49cf-81b9-872bd0260256
+		summarizeBy: none
+		sourceColumn: signal_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column rationale
+		dataType: string
+		lineageTag: 930c0dae-a8d6-42c3-9ce2-9cb8498777ee
+		summarizeBy: none
+		sourceColumn: rationale
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bi_mart_policy_signals = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_mart_policy_signals_Table = cfl_Schema{[Name="bi_mart_policy_signals",Kind="Table"]}[Data]
+				in
+				    bi_mart_policy_signals_Table
+
+	annotation PBI_ResultType = Table
+

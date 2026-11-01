@@ -1,0 +1,26 @@
+table 'Slack weight'
+	lineageTag: 28c0d772-e00e-4bd4-a6e3-e98070ec5925
+
+	measure 'Slack weight Value' = SELECTEDVALUE ( 'Slack weight'[Slack weight], 0.5 )
+		lineageTag: 3ebc8088-d679-477e-b839-7975c8d4b9b1
+
+	column 'Slack weight'
+		lineageTag: 71b2a692-ade8-479c-9735-bf899d70e025
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Slack weight' = calculated
+		mode: import
+		source = GENERATESERIES(0, 1.5, 0.1)
+
+	annotation PBI_Id = 6547e8e62f4b4007a028f13b775a41b6
+

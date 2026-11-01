@@ -1,0 +1,115 @@
+table bronze_ingestion_log
+	lineageTag: 49d113ad-8879-4f48-b0f1-c84655b07ce8
+
+	column name
+		dataType: string
+		lineageTag: d3e2f8a3-ed65-4ae4-bf6d-65831c03030d
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		dataType: string
+		lineageTag: ebbaf9db-689e-46e2-a514-1fdca0939ab8
+		summarizeBy: none
+		sourceColumn: source
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_id
+		dataType: string
+		lineageTag: f0ce7357-91e2-4acb-89b6-190a7826e935
+		summarizeBy: none
+		sourceColumn: source_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ingested_at
+		dataType: string
+		lineageTag: b3f7dbc5-9f4e-42b7-97c1-e4c39697ba88
+		summarizeBy: none
+		sourceColumn: ingested_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 634ac052-4b3a-4ed6-9a12-66eb0ee8fb99
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column url
+		dataType: string
+		lineageTag: b1692aed-de16-40fc-bc1f-abbcc74b915d
+		summarizeBy: none
+		sourceColumn: url
+
+		annotation SummarizationSetBy = Automatic
+
+	column path
+		dataType: string
+		lineageTag: 522ef5d4-c59f-4c55-b5d4-adadbae2597e
+		summarizeBy: none
+		sourceColumn: path
+
+		annotation SummarizationSetBy = Automatic
+
+	column bytes
+		dataType: double
+		lineageTag: c8faa75b-1223-4fd1-8100-12384f529582
+		summarizeBy: sum
+		sourceColumn: bytes
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sha256
+		dataType: string
+		lineageTag: 3a05cc46-4cf5-432f-aef4-c839a2dc75ae
+		summarizeBy: none
+		sourceColumn: sha256
+
+		annotation SummarizationSetBy = Automatic
+
+	column run_id
+		dataType: string
+		lineageTag: 2c38d65f-1d31-4fbd-b82c-6296f10e1121
+		summarizeBy: none
+		sourceColumn: run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column changed
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a5bca874-7930-4d59-abc1-c636a3fd1c11
+		summarizeBy: none
+		sourceColumn: changed
+
+		annotation SummarizationSetBy = Automatic
+
+	column error
+		dataType: string
+		lineageTag: 413f804c-78ec-4fe8-9bc9-d28fcef6b94d
+		summarizeBy: none
+		sourceColumn: error
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bronze_ingestion_log = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bronze_ingestion_log_Table = cfl_Schema{[Name="bronze_ingestion_log",Kind="Table"]}[Data]
+				in
+				    bronze_ingestion_log_Table
+
+	annotation PBI_ResultType = Table
+

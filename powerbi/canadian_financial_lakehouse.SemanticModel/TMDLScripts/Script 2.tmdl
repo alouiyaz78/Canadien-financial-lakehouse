@@ -1,0 +1,8 @@
+createOrReplace
+
+	ref table _Measures
+		measure 'Taylor Reading' =
+				VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[taylor_rule_rate] ) )
+				VAR Gap = CALCULATE ( [Taylor Gap], bi_mart_macro_monthly[month] = M )
+				RETURN SWITCH ( TRUE (), ISBLANK ( Gap ), BLANK (), Gap < -0.5, "Below the rule: room to hike", Gap > 0.5, "Above the rule: room to cut", "In line with the rule" )
+			displayFolder: Policy

@@ -1,0 +1,49 @@
+relationship fa227e6a-d50f-4bd8-9664-622c7bc9eebe
+	joinOnDateBehavior: datePartOnly
+	fromColumn: bi_fact_policy_calendar.date
+	toColumn: LocalDateTable_b9358580-695a-49d7-aaf6-041ee9a58e4e.Date
+
+relationship c500a685-002a-48e3-9758-5a95723c2994
+	joinOnDateBehavior: datePartOnly
+	fromColumn: bi_fact_policy_decisions.date
+	toColumn: LocalDateTable_7905c435-ce51-4ebe-a4c9-811b45da5365.Date
+
+relationship 40012ca1-0f9d-46ef-83eb-9c83edf48ffd
+	joinOnDateBehavior: datePartOnly
+	fromColumn: bi_mart_policy_signals.reference_month
+	toColumn: LocalDateTable_bcae03d1-a96c-4e99-aa32-ff14349d4a47.Date
+
+relationship 3c318791-6ad9-4feb-9163-220f5d9997f9
+	joinOnDateBehavior: datePartOnly
+	fromColumn: freshness_report.last_date
+	toColumn: LocalDateTable_d0516d55-c229-4d0d-a05c-2e6fe8cddadd.Date
+
+relationship c21fda8d-d102-4bcb-a526-068e35693f0a
+	joinOnDateBehavior: datePartOnly
+	fromColumn: freshness_report.checked_at
+	toColumn: LocalDateTable_30a01f93-ae9d-4397-8473-6a6d859b8388.Date
+
+relationship a75e38d1-2936-4c58-455c-f5e056a886a5
+	fromColumn: bi_mart_macro_monthly.month
+	toColumn: bi_dim_date.date
+
+relationship c19b49de-27c8-cbb9-03fc-010f448f8a90
+	fromColumn: bi_fact_yield_curve.date
+	toColumn: bi_dim_date.date
+
+relationship 9e96da1a-bda2-94ea-3be2-c2a96ab688a0
+	fromColumn: bi_fact_observations.date
+	toColumn: bi_dim_date.date
+
+relationship 734a2eb6-489d-ecc7-5142-a29730a33291
+	fromColumn: bi_fact_observations.name
+	toColumn: bi_dim_series.name
+
+relationship e4d1678a-886a-0101-088d-9d98c740ee3f
+	fromColumn: bi_fact_policy_decisions.announcement_date
+	toColumn: bi_dim_date.date
+
+relationship e2dd488d-50b2-9ecb-79f8-7585609a3b89
+	fromColumn: bronze_ingestion_log.name
+	toColumn: bi_dim_series.name
+

@@ -1,0 +1,225 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 502.39999389648438,
+        "y": 36.799999237060547
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 245,
+            "y": 318
+          },
+          "nodeIndex": "bi_dim_date",
+          "nodeLineageTag": "67ded783-5252-49bd-a812-be52776a14f4",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 334,
+            "y": -23
+          },
+          "nodeIndex": "bi_dim_series",
+          "nodeLineageTag": "af3acef6-1ec9-4f47-afa4-1356a3cfa68c",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 852,
+            "y": 99
+          },
+          "nodeIndex": "bi_fact_observations",
+          "nodeLineageTag": "07900ff2-14a4-4e54-911f-eac21dd941e6",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1136,
+            "y": 87
+          },
+          "nodeIndex": "bi_fact_policy_calendar",
+          "nodeLineageTag": "7ec0a3c4-cab8-4558-80ce-12f1ae2e565b",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1420,
+            "y": 25
+          },
+          "nodeIndex": "bi_fact_policy_decisions",
+          "nodeLineageTag": "2d0ca3db-8df4-4d60-918a-f3b2f245cc12",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1704,
+            "y": 87
+          },
+          "nodeIndex": "bi_fact_yield_curve",
+          "nodeLineageTag": "c501cdea-374f-4dc9-a222-943a31368506",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1988,
+            "y": 87
+          },
+          "nodeIndex": "bi_mart_energy_passthrough",
+          "nodeLineageTag": "65dc85ef-d92d-462d-a4b3-8365a1c48e64",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2272,
+            "y": 25
+          },
+          "nodeIndex": "bi_mart_macro_monthly",
+          "nodeLineageTag": "1b2206da-1320-4ebb-90db-b68b1ac4e0fd",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2556,
+            "y": 25
+          },
+          "nodeIndex": "bi_mart_policy_signals",
+          "nodeLineageTag": "7f291a6a-d9fc-4c8e-9167-cc9af896a9c8",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": -25
+          },
+          "nodeIndex": "bronze_ingestion_log",
+          "nodeLineageTag": "49d113ad-8879-4f48-b0f1-c84655b07ce8",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2840,
+            "y": 39
+          },
+          "nodeIndex": "freshness_report",
+          "nodeLineageTag": "7e98777c-b663-47fa-8ae2-e4f778184bcd",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "7dbe709a-2ea4-4aae-8f6e-d2bac9c26264",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "Amortization years",
+          "nodeLineageTag": "33df3300-d1c1-4915-9ac9-bfa4effeca43",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "Inflation weight",
+          "nodeLineageTag": "ed1388f6-4661-46bc-ade8-257632759313",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "Mortgage amount",
+          "nodeLineageTag": "ef27afe5-4fb8-4609-93af-6a81264cb3c2",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "Neutral real rate",
+          "nodeLineageTag": "6aabb087-d4a4-4020-9067-4f09baab4983",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {},
+          "nodeIndex": "Slack weight",
+          "nodeLineageTag": "28c0d772-e00e-4bd4-a6e3-e98070ec5925",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Toutes les tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Toutes les tables",
+  "defaultDiagram": "Toutes les tables"
+}

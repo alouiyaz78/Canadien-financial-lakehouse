@@ -1,0 +1,25 @@
+table 'Amortization years'
+	lineageTag: 33df3300-d1c1-4915-9ac9-bfa4effeca43
+
+	measure 'Amortization years Value' = SELECTEDVALUE ( 'Amortization years'[Amortization years], 25 )
+		lineageTag: 45b9e2d7-53b5-4246-94e7-773aec1050cd
+
+	column 'Amortization years'
+		formatString: 0
+		lineageTag: 218ae854-8b09-4025-8cf9-a78589cbb6b8
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Amortization years' = calculated
+		mode: import
+		source = GENERATESERIES(15, 30, 1)
+
+	annotation PBI_Id = 93dedab9761748c1a80edbbeb55029bc
+

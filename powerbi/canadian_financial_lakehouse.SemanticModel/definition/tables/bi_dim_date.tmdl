@@ -1,0 +1,90 @@
+table bi_dim_date
+	lineageTag: 67ded783-5252-49bd-a812-be52776a14f4
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: ab656593-181a-4939-8cd1-09328f4ad2e4
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 9af17e47-e719-4bb2-8ad2-58c37a2ffbca
+		summarizeBy: sum
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarter
+		dataType: string
+		lineageTag: 06bbc4f1-5bf5-4e69-b9cf-8f2a3e5d3a13
+		summarizeBy: none
+		sourceColumn: quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_number
+		dataType: int64
+		formatString: 0
+		lineageTag: ae1c4eca-1f43-4b37-ab54-c1ffa2b5aec0
+		summarizeBy: sum
+		sourceColumn: month_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_name
+		dataType: string
+		lineageTag: 910378a4-a684-4979-8803-e467b323798b
+		summarizeBy: none
+		sourceColumn: month_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column year_month
+		dataType: string
+		lineageTag: 87807aaf-3efb-4ce5-ac14-e88f43bdd5ee
+		summarizeBy: none
+		sourceColumn: year_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_start
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: db3695eb-71f1-4e5f-a69c-fd56d78d3c2e
+		summarizeBy: none
+		sourceColumn: month_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column decade
+		dataType: string
+		lineageTag: 40244c5e-4607-4839-8c07-b34d7c4e2f79
+		summarizeBy: none
+		sourceColumn: decade
+
+		annotation SummarizationSetBy = Automatic
+
+	partition bi_dim_date = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_dim_date_Table = cfl_Schema{[Name="bi_dim_date",Kind="Table"]}[Data]
+				in
+				    bi_dim_date_Table
+
+	annotation PBI_ResultType = Exception
+

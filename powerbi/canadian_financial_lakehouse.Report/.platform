@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "canadian_financial_lakehouse"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d7e53bb0-0ae3-43c7-99f5-b3b2d345eefc"
+  }
+}

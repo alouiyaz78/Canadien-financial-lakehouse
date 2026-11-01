@@ -1,0 +1,45 @@
+table bi_fact_observations
+	lineageTag: 07900ff2-14a4-4e54-911f-eac21dd941e6
+
+	column name
+		dataType: string
+		lineageTag: 87cf0e6b-d25b-4582-8ba7-0583da9aeac7
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7062ba5e-59df-4419-a31b-9deca005e0ef
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column value
+		dataType: double
+		lineageTag: f213c947-0d4b-42a4-b24c-5e2270d2499c
+		summarizeBy: sum
+		sourceColumn: value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition bi_fact_observations = m
+		mode: import
+		source =
+				let
+				    Source = Databricks.Catalogs("dbc-b02b54aa-97d8.cloud.databricks.com", "/sql/1.0/warehouses/06f14f6523954c28", [Catalog=null, Database=null, QueryTags=null, EnableAutomaticProxyDiscovery=null, Implementation="2.0", Protocol=null]),
+				    workspace_Database = Source{[Name="workspace",Kind="Database"]}[Data],
+				    cfl_Schema = workspace_Database{[Name="cfl",Kind="Schema"]}[Data],
+				    bi_fact_observations_Table = cfl_Schema{[Name="bi_fact_observations",Kind="Table"]}[Data]
+				in
+				    bi_fact_observations_Table
+
+	annotation PBI_ResultType = Exception
+
