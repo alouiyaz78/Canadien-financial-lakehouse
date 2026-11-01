@@ -1,0 +1,77 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "48d80905c2b9991316f2",
+  "position": {
+    "x": 47,
+    "y": 850,
+    "z": 8,
+    "height": 210,
+    "width": 1845,
+    "tabOrder": 8
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "What is this report?",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "13pt",
+                      "color": "#0B2545"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Questions the Bank of Canada faces after its 28 October 2026 hike: will the oil shock reach core inflation, how much do US tariffs really cost, and what do mortgage renewals do to households? Use the buttons above to open each analysis; hover the ? of any chart for a plain-language explanation.",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontSize": "11pt",
+                      "color": "#33415C"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Data: Bank of Canada (Valet), Statistics Canada, FRED and the US Census Bureau, ingested daily into a Databricks lakehouse (Bronze → Silver → Gold). Values are shown at reference dates. Source code: github.com/alouiyaz78/canadien-financial-lakehouse",
+                    "textStyle": {
+                      "fontWeight": "normal",
+                      "fontSize": "11pt",
+                      "color": "#33415C"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

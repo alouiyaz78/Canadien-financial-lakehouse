@@ -134,6 +134,40 @@ class Page:
             },
         )
 
+    def navigator(self, pos) -> None:
+        """Built-in page navigator: one button per report page, kept in sync by Power BI."""
+        self.add(
+            key="navigator",
+            pos=pos,
+            visual={"visualType": "pageNavigator", "visualContainerObjects": title_objects(None)},
+        )
+
+    def note(self, key, pos, paragraphs: list[tuple[str, bool]]) -> None:
+        runs = [
+            {
+                "textRuns": [
+                    {
+                        "value": t,
+                        "textStyle": {
+                            "fontWeight": "bold" if b else "normal",
+                            "fontSize": "13pt" if b else "11pt",
+                            "color": "#0B2545" if b else "#33415C",
+                        },
+                    }
+                ]
+            }
+            for t, b in paragraphs
+        ]
+        self.add(
+            key,
+            pos,
+            {
+                "visualType": "textbox",
+                "objects": {"general": [{"properties": {"paragraphs": runs}}]},
+                "visualContainerObjects": title_objects(None),
+            },
+        )
+
     def kpis(self, fields: list[dict]) -> None:
         self.add(
             "kpis",
@@ -257,6 +291,7 @@ class Page:
             "objects": {
                 "values": [{"properties": {"fontSize": lit("11D")}}],
                 "columnHeaders": [{"properties": {"fontSize": lit("11D"), "bold": lit("true")}}],
+                "total": [{"properties": {"totals": lit("false")}}],
             },
             "visualContainerObjects": title_objects(title),
         }
@@ -321,6 +356,77 @@ def dump(path: Path, obj: dict) -> None:
 # ------------------------------------------------------------------ pages
 
 LEFT, RIGHT = (47, 320, 1100, 740), (1165, 320, 727, 740)
+
+
+def overview_page() -> Page:
+    p = Page("overview", "Overview")
+    p.headline("Canada's economy at a glance — refreshed daily from public sources")
+    p.kpis(
+        [
+            measure("Policy Rate (latest)", "Policy rate (%)"),
+            measure("Latest Headline CPI", "Headline CPI (y/y %)"),
+            measure("Latest Core Inflation", "Core inflation (%)"),
+            measure("Net Policy Stance Label", "Net policy stance"),
+            measure("Latest Tariff on Canada (%)", "US tariff paid by Canada (%)"),
+            measure("Monthly Payment Shock (%)", "Mortgage renewal shock (%)"),
+        ]
+    )
+    w, gap = (1845 - 4 * 18) / 5, 18
+    tiles = [
+        (
+            "t_policy",
+            [measure("Policy Rate", "Policy rate"), measure("Taylor Rule Rate", "Taylor rule")],
+            "Policy vs Taylor rule (%)",
+            "2015-01-01",
+        ),
+        (
+            "t_inflation",
+            [measure("Headline CPI (y/y)", "Headline"), measure("Core Inflation (avg)", "Core")],
+            "Inflation (y/y %)",
+            "2015-01-01",
+        ),
+        ("t_oil", [measure("WTI (CAD)", "WTI in C$")], "Oil in C$ per barrel", "2019-01-01"),
+        (
+            "t_tariffs",
+            [measure("US Tariff on Canada (%)", "Canada"), measure("US Tariff on China (%)", "China")],
+            "Effective US tariff (%)",
+            "2023-01-01",
+        ),
+        (
+            "t_mortgage",
+            [measure("Mortgage 5Y Today (%)", "Today"), measure("Mortgage 5Y at Origination (%)", "5 years earlier")],
+            "5-year mortgage rate (%)",
+            "2015-01-01",
+        ),
+    ]
+    for i, (key, ys, title, start) in enumerate(tiles):
+        p.line(
+            key,
+            (47 + i * (w + gap), 320, w, 400),
+            ys,
+            title,
+            start=start,
+            y_range=(4, 8) if key == "t_mortgage" else None,
+        )
+    p.navigator((47, 740, 1845, 90))
+    p.note(
+        "about",
+        (47, 850, 1845, 210),
+        [
+            ("What is this report?", True),
+            (
+                "Questions the Bank of Canada faces after its 28 October 2026 hike: will the oil shock reach core inflation, how much do US tariffs really cost, "
+                "and what do mortgage renewals do to households? Use the buttons above to open each analysis; hover the ? of any chart for a plain-language explanation.",
+                False,
+            ),
+            (
+                "Data: Bank of Canada (Valet), Statistics Canada, FRED and the US Census Bureau, ingested daily into a Databricks lakehouse (Bronze → Silver → Gold). "
+                "Values are shown at reference dates. Source code: github.com/alouiyaz78/canadien-financial-lakehouse",
+                False,
+            ),
+        ],
+    )
+    return p
 
 
 def signals_page() -> Page:
@@ -682,14 +788,16 @@ def reset_sliders() -> None:
 
 
 def main() -> None:
-    pages = [signals_page(), oil_page(), tariffs_page(), mortgage_page(), health_page()]
+    overview = overview_page()
+    pages = [overview, signals_page(), oil_page(), tariffs_page(), mortgage_page(), health_page()]
     for page in pages:
         page.write()
     meta_path = PAGES / "pages.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
     generated = [p.name for p in pages]
     manual = [name for name in meta["pageOrder"] if name not in generated]
-    meta["pageOrder"] = manual + generated
+    meta["pageOrder"] = [overview.name] + manual + generated[1:]
+    meta["activePageName"] = overview.name
     dump(meta_path, meta)
     reset_sliders()
     fix_policy_page()
