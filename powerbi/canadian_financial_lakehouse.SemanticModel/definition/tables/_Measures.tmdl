@@ -419,7 +419,7 @@ table _Measures
 		displayFolder: Ops
 		lineageTag: 68e95d65-f0aa-4e7f-84e9-6f1a05598eaf
 
-	measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } )
+	measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } ) + 0
 		formatString: 0
 		displayFolder: Ops
 		lineageTag: 36daff1a-9045-48d7-8d62-c8b077c5ec0c
@@ -439,7 +439,7 @@ table _Measures
 		displayFolder: Ops
 		lineageTag: abb99e4a-e8e4-4769-b130-1b62050a23c1
 
-	measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" )
+	measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" ) + 0
 		formatString: 0
 		displayFolder: Ops
 		lineageTag: c980ce17-2033-4f38-8241-7f1ce6b830b1
@@ -449,6 +449,7 @@ table _Measures
 			RETURN CALCULATE ( AVERAGE ( bi_mart_macro_monthly[us_tariff_rate_on_canada] ), bi_mart_macro_monthly[month] = M, REMOVEFILTERS ( bi_dim_date ) )
 		formatString: 0.00
 		displayFolder: Trade
+		lineageTag: 5664cee6-fa11-45e5-b855-d91dda483d00
 
 	measure 'Latest Tariff on Mexico (%)' =
 			VAR M = CALCULATE ( MAX ( bi_mart_macro_monthly[month] ), NOT ISBLANK ( bi_mart_macro_monthly[us_tariff_rate_on_mexico] ), REMOVEFILTERS ( bi_dim_date ) )

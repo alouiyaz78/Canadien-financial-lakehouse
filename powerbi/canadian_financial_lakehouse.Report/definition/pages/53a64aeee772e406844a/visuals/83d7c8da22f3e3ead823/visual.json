@@ -113,6 +113,26 @@
             }
           }
         }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "start": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "end": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "visualContainerObjects": {
@@ -149,7 +169,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Yellow above blue = households renew at a higher rate. Canadian terms are 5 years, so hikes reach borrowers with a lag.'"
+                  "Value": "'First line above the second = households renew at a higher rate. Canadian terms are 5 years, so hikes reach borrowers with a lag.'"
                 }
               }
             }

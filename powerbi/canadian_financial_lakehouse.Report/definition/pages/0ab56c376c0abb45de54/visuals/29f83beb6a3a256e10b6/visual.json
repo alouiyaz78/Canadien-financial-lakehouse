@@ -98,12 +98,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Market Pricing Label"
+                  "Property": "Latest Market-Implied Move 6M (bp)"
                 }
               },
-              "queryRef": "_Measures.Market Pricing Label",
-              "nativeQueryRef": "Market pricing (6 months)",
-              "displayName": "Market pricing (6 months)"
+              "queryRef": "_Measures.Latest Market-Implied Move 6M (bp)",
+              "nativeQueryRef": "Market-implied move, 6 m (bp)",
+              "displayName": "Market-implied move, 6 m (bp)"
             }
           ]
         }
@@ -159,6 +159,13 @@
                       "Percent": 0.2
                     }
                   }
+                }
+              }
+            },
+            "displayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
                 }
               }
             }

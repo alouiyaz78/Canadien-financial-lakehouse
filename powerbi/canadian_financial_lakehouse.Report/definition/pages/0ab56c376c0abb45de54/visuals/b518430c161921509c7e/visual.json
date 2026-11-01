@@ -33,22 +33,18 @@
             },
             {
               "field": {
-                "Aggregation": {
+                "Column": {
                   "Expression": {
-                    "Column": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "bi_mart_policy_signals"
-                        }
-                      },
-                      "Property": "latest_value"
+                    "SourceRef": {
+                      "Entity": "bi_mart_policy_signals"
                     }
                   },
-                  "Function": 0
+                  "Property": "latest_value"
                 }
               },
-              "queryRef": "Sum(bi_mart_policy_signals.latest_value)",
+              "queryRef": "bi_mart_policy_signals.latest_value",
               "nativeQueryRef": "Latest",
+              "active": true,
               "displayName": "Latest"
             },
             {

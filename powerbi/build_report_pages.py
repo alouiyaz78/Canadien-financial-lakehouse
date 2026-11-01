@@ -150,6 +150,7 @@ class Page:
                                 "fontSize": lit("26D"),
                                 "bold": lit("true"),
                                 "fontColor": theme_color(1, 0.2),
+                                "displayUnits": lit("1D"),
                             },
                             "selector": {"id": "default"},
                         }
@@ -165,9 +166,13 @@ class Page:
             },
         )
 
-    def line(self, key, pos, ys: list[dict], title, subtitle=None, start="2000-01-01", category=None) -> None:
+    def line(
+        self, key, pos, ys: list[dict], title, subtitle=None, start="2000-01-01", category=None, y_range=None
+    ) -> None:
         cat = category or column(*DATE)
         objects = {"categoryAxis": [{"properties": {"fontSize": lit("9D"), "gridlineShow": lit("true")}}]}
+        if y_range:  # the axis start only clips x: pin y so older, higher values do not flatten the lines
+            objects["valueAxis"] = [{"properties": {"start": lit(f"{y_range[0]}D"), "end": lit(f"{y_range[1]}D")}}]
         if category is None:
             objects["categoryAxis"][0]["properties"]["start"] = lit(f"datetime'{start}T00:00:00'")
         self.add(
@@ -219,6 +224,7 @@ class Page:
                                 "fontSize": lit(size),
                                 "bold": lit("true"),
                                 "fontColor": theme_color(1, 0.2),
+                                "displayUnits": lit("1D"),
                             },
                             "selector": {"id": "default"},
                         }
@@ -322,7 +328,7 @@ def signals_page() -> Page:
             measure("Latest Inflation Expectations 2-3Y", "Expected inflation 2–3y (%)"),
             measure("Latest Firms Expecting > 3% Inflation (%)", "Firms expecting > 3% (%)"),
             measure("Net Policy Stance Label", "Net policy stance"),
-            measure("Market Pricing Label", "Market pricing (6 months)"),
+            measure("Latest Market-Implied Move 6M (bp)", "Market-implied move, 6 m (bp)"),
         ]
     )
     p.line(
@@ -345,7 +351,7 @@ def signals_page() -> Page:
         RIGHT,
         [
             column("bi_mart_policy_signals", "indicator", "Indicator"),
-            total("bi_mart_policy_signals", "latest_value", "Latest"),
+            column("bi_mart_policy_signals", "latest_value", "Latest"),
             column("bi_mart_policy_signals", "unit", "Unit"),
             signal_label,
         ],
@@ -392,7 +398,7 @@ def oil_page() -> Page:
         [measure("FX Effect on Oil (pts)", "FX effect (pts)")],
         "Exchange-rate effect on oil (pts)",
         "> 0: a weaker loonie amplified the shock; < 0: it cushioned it.",
-        start="2019-01-01",
+        start="2022-01-01",
     )
     return p
 
@@ -460,8 +466,9 @@ def mortgage_page() -> Page:
             measure("Mortgage 5Y at Origination (%)", "Rate signed 5 years earlier"),
         ],
         "Posted 5-year mortgage rate: today vs at signing (%)",
-        "Yellow above blue = households renew at a higher rate. Canadian terms are 5 years, so hikes reach borrowers with a lag.",
+        "First line above the second = households renew at a higher rate. Canadian terms are 5 years, so hikes reach borrowers with a lag.",
         start="2015-01-01",
+        y_range=(4, 8),
     )
     p.slicer("amount", (1165, 320, 727, 180), "Mortgage amount")
     p.slicer("amortization", (1165, 510, 727, 180), "Amortization years")

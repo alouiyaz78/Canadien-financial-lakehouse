@@ -256,11 +256,11 @@ RETURN IF ( CALCULATE ( [10Y-2Y Spread], bi_mart_macro_monthly[month] = M ) < 0,
 // Folder: Ops  (tables: freshness_report, bronze_ingestion_log)
 
 Series Monitored = COUNTROWS ( freshness_report )
-Series Late or Missing = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } )
+Series Late or Missing = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } ) + 0
 Data Freshness Score = DIVIDE ( CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "ok", "retired" } ), [Series Monitored] )
 Ingestion Runs = DISTINCTCOUNT ( bronze_ingestion_log[run_id] )
 Series Changed (runs) = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[changed] = TRUE () )
-Ingestion Errors = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" )
+Ingestion Errors = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" ) + 0
 
 
 // ---------------------------------------------------------------- Latest values (cards)

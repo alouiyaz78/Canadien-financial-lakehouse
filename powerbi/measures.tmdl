@@ -356,7 +356,7 @@ createOrReplace
 			formatString: 0
 			displayFolder: Ops
 
-		measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } )
+		measure 'Series Late or Missing' = CALCULATE ( COUNTROWS ( freshness_report ), freshness_report[status] IN { "late", "missing" } ) + 0
 			formatString: 0
 			displayFolder: Ops
 
@@ -372,7 +372,7 @@ createOrReplace
 			formatString: 0
 			displayFolder: Ops
 
-		measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" )
+		measure 'Ingestion Errors' = CALCULATE ( COUNTROWS ( bronze_ingestion_log ), bronze_ingestion_log[status] = "error" ) + 0
 			formatString: 0
 			displayFolder: Ops
 
