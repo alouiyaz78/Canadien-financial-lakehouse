@@ -3,9 +3,9 @@
   "name": "17102a7296d09617a3a2",
   "position": {
     "x": 47.05118471004058,
-    "y": 358.2324927852657,
+    "y": 358.23249278526572,
     "z": 2,
-    "height": 521.7675072147342,
+    "height": 521.76750721473422,
     "width": 1165.4216520486975,
     "tabOrder": 2
   },
@@ -134,6 +134,32 @@
               "expr": {
                 "Literal": {
                   "Value": "'Rule = r* + core inflation + 0.5 × inflation gap − 0.5 × 2 × unemployment gap. Policy below the rule = room to hike.'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'What is the Taylor rule?'"
                 }
               }
             }
